@@ -9,8 +9,8 @@ const Navbar=() => {
   const isLoggedIn = useSelector((state)=> state.auth.isLoggedIn);
   const navLinks = [
     { name: "Home", path: "/" },
-    { name: "Browse", path: "/category" },
-    { name: "Wishlist", path: "/all-podcasts" }
+    { name: "Browse", path: "/browse" },
+    { name: "Wishlist", path: "/bookmark" }
   ];
   const navLinksEnd = [
     { name: "Socials", path: "/category" },

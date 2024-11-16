@@ -2,6 +2,7 @@ import React from 'react';
 import WatchBtn from '../components/Buttons/WatchBtn';
 import WatchLaterBtn from '../components/Buttons/WatchLaterBtn';
 import AnimeList from '../components/Cards/Animelist';
+import BookmarkButton from '../components/Buttons/BookmarkButton';
 
 const Home = () => {
   return (
@@ -29,7 +30,7 @@ const Home = () => {
         {}
         <div className="mt-4 md:pl-10 lg:pl-16 xl:pl-28 flex space-x-2 px-4 md:px-0">
           <WatchBtn />
-          <WatchLaterBtn />
+          <BookmarkButton/>
         </div>
 
         {}

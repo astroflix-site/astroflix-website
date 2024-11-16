@@ -16,6 +16,7 @@ const user = new mongoose.Schema({
         unique: true,
         required: true
     },
+    bookmarks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Content' }]
 })
 
 const User = mongoose.models.user || mongoose.model("user", user);
