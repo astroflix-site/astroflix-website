@@ -15,6 +15,8 @@ app.use(cors({
 //all routes
 app.use('/api', userApi)
 
+app.get('/', )
+
 app.listen(process.env.PORT, ()=>{
     console.log('Server Started On ' + process.env.PORT)
 })

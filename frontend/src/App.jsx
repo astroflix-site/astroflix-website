@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import MainLayout from './layouts/MainLayout'
 import AuthLayout from './layouts/AuthLayout'
@@ -9,7 +9,31 @@ import NoPage from './pages/NoPage'
 import Register from './pages/Register'
 import Login from './pages/Login'
 import AnimeDetail from './pages/AnimeDetail'
+import { useDispatch } from 'react-redux'
+import { authActions } from './store/auth'
+
+
+
 function App() {
+
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const response = await fetch('http://localhost:3000/api/check-cookie', { credentials: 'include' });
+        const data = await response.json();
+        if (data.message) {
+          dispatch(authActions.login());
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    checkAuth();
+  }, [dispatch]);
+
   return (
     <>
         <Router>

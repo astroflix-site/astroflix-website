@@ -1,4 +1,5 @@
-const express = require ('express').Router
+const express = require('express')
+const router = express.Router()
 const User = require('../models/user');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -56,8 +57,6 @@ router.post("/register", async (req, res) => {
   }
 });
 
-//Login Route
-
 router.post("/login", async(req, res)=>{
     try {
         const {email, password} = req.body
@@ -74,7 +73,7 @@ router.post("/login", async(req, res)=>{
       if (!isValidPassword) {
         return res.status(400).json({ message: "Invalid Credentials" });}
         
-  // gnerating the jwt token
+  // generating the jwt token
   const token = jwt.sign({id: existingUser._id, email: existingUser.email}, process.env.TOKEN_SECRET ,{expiresIn: "30d"})
   res.cookie("AniFlexToken", token, {
       httpOnly: true,
@@ -98,10 +97,10 @@ router.post("/login", async(req, res)=>{
       return res.status(400).json(error)
     }
 })
-// logout Route
-router.post('/logout', async(req,res)=>{
+// logout
+  router.post('/logout', async(req,res)=>{
     try {
-      res.clearCookie("AniflexToken", {
+      res.clearCookie("AniFlexToken", {
         httpOnly: true,
       });
       return res.status(200).json({message: "Logged Out Succesfully"})
@@ -110,28 +109,29 @@ router.post('/logout', async(req,res)=>{
     }
   })
 //check if cookie exists or not
+
 router.get('/check-cookie', async(req,res)=>{
-    try {
-      const token = req.cookies.AudCastToken;
-      if (token) {
-        console.log(token)
-        return res.status(200).json({message:true})
-      }
-      return res.status(200).json({message:false})
-    } catch (error) {
-      return res.status(400).json(error)
+  try {
+    const token = req.cookies.AniFlexToken;
+    if (token) {
+      return res.status(200).json({message:true})
     }
-  })
-  
-  router.get('/user-details',IsAuth, async (req,res)=>{
-    try {
-      const {email} = req.user;
-      const existingUser = await User.findOne({email:email}).select("-password");
-      return res.status(200).json({user:existingUser});
-  
-    } catch (error) {
-      return res.status(500).json({error: error})
-    }
-  })
-  
+    return res.status(200).json({message:false})
+  } catch (error) {
+    return res.status(400).json(error)
+  }
+})
+
+router.get('/user-details',IsAuth, async (req,res)=>{
+  try {
+    const {email} = req.user;
+    const existingUser = await User.findOne({email:email}).select("-password");
+    return res.status(200).json({user:existingUser});
+
+  } catch (error) {
+    return res.status(500).json({error: error})
+  }
+})
+
+
 module.exports = router;

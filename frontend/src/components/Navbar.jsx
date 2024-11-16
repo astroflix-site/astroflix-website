@@ -3,8 +3,10 @@ import { Link } from 'react-router-dom';
 import { CgMenuLeftAlt } from "react-icons/cg";
 import { RxCross1 } from "react-icons/rx";
 import Search from './Search';
+import { useSelector } from 'react-redux'
 
-function Navbar({ isLoggedIn }) {
+const Navbar=() => {
+  const isLoggedIn = useSelector((state)=> state.auth.isLoggedIn);
   const navLinks = [
     { name: "Home", path: "/" },
     { name: "Browse", path: "/category" },
@@ -65,8 +67,8 @@ function Navbar({ isLoggedIn }) {
           </>
         ) : (
           <Link to="/profile" className="flex items-center space-x-2">
-            <img className="h-8 w-8 rounded-full" src="/user.png" alt="Profile" />
-            <span className="text-black font-semibold">Profile</span>
+            <img className="h-12 w-12 rounded-full" src="/user.png" alt="Profile" />
+            <span className="text-black font-semibold"></span>
           </Link>
         )}
       </div>

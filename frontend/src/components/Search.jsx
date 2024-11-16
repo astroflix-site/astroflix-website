@@ -44,7 +44,7 @@ const Search = () => {
       {/* Normal Search Input */}
       <form
         onClick={() => setIsMenuOpen(true)}
-        className="flex items-center w-full max-w-md lg:max-w-lg xl:max-w-xl border border-gray-300 rounded-full overflow-hidden shadow-md cursor-pointer"
+        className="flex items-center w-full max-w-md lg:max-w-lg xl:max-w-xl border bg-gray-900 border-gray-300 rounded-full overflow-hidden shadow-md cursor-pointer"
       >
         <input
           type="text"
