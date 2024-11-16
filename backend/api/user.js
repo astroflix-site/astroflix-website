@@ -1,5 +1,4 @@
 const express = require ('express').Router
-const User = require('../models/user')
 const User = require('../models/user');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -110,3 +109,29 @@ router.post('/logout', async(req,res)=>{
       return res.status(400).json(error)
     }
   })
+//check if cookie exists or not
+router.get('/check-cookie', async(req,res)=>{
+    try {
+      const token = req.cookies.AudCastToken;
+      if (token) {
+        console.log(token)
+        return res.status(200).json({message:true})
+      }
+      return res.status(200).json({message:false})
+    } catch (error) {
+      return res.status(400).json(error)
+    }
+  })
+  
+  router.get('/user-details',IsAuth, async (req,res)=>{
+    try {
+      const {email} = req.user;
+      const existingUser = await User.findOne({email:email}).select("-password");
+      return res.status(200).json({user:existingUser});
+  
+    } catch (error) {
+      return res.status(500).json({error: error})
+    }
+  })
+  
+module.exports = router;
