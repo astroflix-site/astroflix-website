@@ -1,11 +1,12 @@
 import React from 'react';
 import WatchBtn from '../components/Buttons/WatchBtn';
 import WatchLaterBtn from '../components/Buttons/WatchLaterBtn';
-import AnimeList from '../components/Cards/Animelist';
+import AnimeList from '../components/Cards/AnimeList';
 import BookmarkButton from '../components/Buttons/BookmarkButton';
-
+import './utility.css'
 const Home = () => {
-  return (
+  return (<>
+    <div className="black-shade"></div>
     <div className="relative w-full h-screen bg-neutral-800">
       {}
       <video
@@ -34,12 +35,14 @@ const Home = () => {
         </div>
 
         {}
-        <div className="fixed sm:overflow-x-auto bottom-1 px-4 sm:px-10 md:px-16 lg:px-20 xl:px-24 w-full">
+        <div className="fixed sm: bottom-1 px-4 sm:px-10 md:px-16 lg:px-20 xl:px-24 w-full">
           <AnimeList />
         </div>
       </div>
 
     </div>
+
+    </>
   );
 };
 

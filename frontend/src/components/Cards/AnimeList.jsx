@@ -1,7 +1,7 @@
 // src/components/AnimeList.js
 import React from 'react';
 import AnimeCard from './AnimeCard';
-
+import './AnimeList.css'
 const AnimeList = () => {
   const animes = [
     {
@@ -40,18 +40,50 @@ const AnimeList = () => {
       title: 'Mushoku Tensei Reincarnation',
       image: 'https://m.media-amazon.com/images/I/91ygGK5PTfL._SY466_.jpg',
     },
-    // Add more anime objects as needed
+    {
+      title: 'Mushoku Tensei Reincarnation',
+      image: 'https://m.media-amazon.com/images/I/91ygGK5PTfL._SY466_.jpg',
+    },
+    {
+      title: 'Mushoku Tensei Reincarnation',
+      image: 'https://m.media-amazon.com/images/I/91ygGK5PTfL._SY466_.jpg',
+    },
+    {
+      title: 'Mushoku Tensei Reincarnation',
+      image: 'https://m.media-amazon.com/images/I/91ygGK5PTfL._SY466_.jpg',
+    },
+    {
+      title: 'Mushoku Tensei Reincarnation',
+      image: 'https://m.media-amazon.com/images/I/91ygGK5PTfL._SY466_.jpg',
+    }
+    
   ];
 
   return (
-    <div className="flex  gap-2">
+    <div className="flex overflow-x-scroll scrollbar-hide gap-2">
+      <div class="controls z-30 absolute top-24 left-8 w-[40px] h-[40px]">
+        <i class="prev bg-black text-white flex items-center justify-center rounded-full ri-arrow-left-line w-full h-full border-slate-500 border-2"></i>
+      </div>
+      
+      <div class="controls z-30 absolute top-24 right-8 w-[40px] h-[40px] ">
+        <i class="next bg-black text-white flex items-center justify-center rounded-full ri-arrow-right-line w-full h-full border-slate-500 border-2"></i>
+      </div>
+
       {animes.map((anime, index) => (
-        <AnimeCard
+        <div
+          className="flex-shrink-0 w-40 h-60 m-2 bg-gray-800 rounded-lg overflow-hidden"
           key={index}
-          title={anime.title}
-          image={anime.image}
-        />
+        >
+          <img
+            src={anime.image}
+            alt={anime.title}
+            className="w-full h-3/4 object-cover"
+          />
+          <h3 className="text-white text-center mt-2">{anime.title}</h3>
+        </div>
+        
       ))}
+      <div className="side-shade"></div>
     </div>
   );
 };

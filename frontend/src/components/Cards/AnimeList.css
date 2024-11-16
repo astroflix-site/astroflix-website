@@ -1,0 +1,19 @@
+/* Hide scrollbar while allowing scroll */
+.scrollbar-hide {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* Internet Explorer 10+ */
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none; /* WebKit */
+  }
+
+.side-shade{
+  width: 30%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 10;
+    background: linear-gradient(to left, #101011 0%, #14141686 50%, #1414168a 100%);
+}
