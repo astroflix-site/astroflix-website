@@ -15,5 +15,12 @@
     top: 0;
     right: 0;
     z-index: 10;
-    background: linear-gradient(to left, #101011 0%, #14141686 50%, #1414168a 100%);
+    background: linear-gradient(to left, #101011 0%, #14141686 50%, #14141600 100%);
+}
+
+.title{
+  white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
 }

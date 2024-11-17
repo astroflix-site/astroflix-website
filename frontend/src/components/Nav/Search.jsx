@@ -44,14 +44,14 @@ const Search = () => {
       {/* Normal Search Input */}
       <form
         onClick={() => setIsMenuOpen(true)}
-        className="flex items-center w-full max-w-md lg:max-w-lg xl:max-w-xl border bg-gray-900 border-gray-300 rounded-full overflow-hidden shadow-md cursor-pointer"
+        className="flex items-center w-full max-w-md lg:max-w-lg xl:max-w-xl    rounded-full overflow-hidden cursor-pointer"
       >
         <input
           type="text"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Search Anime..."
-          className="w-full py-3 px-5 text-lg xl:text-xl text-gray-700 focus:outline-none"
+          className=" bg-[#374151] rounded-full p-2 text-white'"
           readOnly // Input is read-only to trigger menu opening
         />
       </form>
@@ -71,7 +71,7 @@ const Search = () => {
           <form
             onSubmit={handleSearch}
             className="w-full max-w-lg flex items-center border-b border-gray-600 pb-3"
-          >
+          >border-red-300
             <input
               type="text"
               value={searchTerm}

@@ -24,11 +24,11 @@ const Navbar=() => {
   };
 
   return (
-    <nav className="text-white px-4 md:px-8 xl:px-20 lg:px-12 py-4 flex  justify-between fixed top-0 left-0 w-full z-50 bg-transparent border-b border-white">
+    <nav className="text-white px-4 md:px-8 xl:px-20 lg:px-12 py-4 flex  justify-between  top-0 left-0 w-full z-50 bg-black border-b border-white">
 
       {/* Navbar Content */}
       <div className="relative z-10 flex items-center lg:flex-1">
-        <Link to="/" className="text-xs md:text-lg lg:text-lg xl:text-4xl font-medium font-serif tracking-widest">ASTROFLIX</Link>
+        <Link to="/" className="text-xs md:text-lg lg:text-lg xl:text-4xl font-medium  tracking-widest">ASTROFLIX</Link>
         
         {/* Desktop Links */}
         <ul className="hidden lg:flex pl-2 xl:pl-6 text-gray-300 items-center lg:space-x-2 xl:space-x-4 lg:flex-1 justify-start">

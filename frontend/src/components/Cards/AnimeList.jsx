@@ -2,6 +2,7 @@
 import React from 'react';
 import AnimeCard from './AnimeCard';
 import './AnimeList.css'
+
 const AnimeList = () => {
   const animes = [
     {
@@ -59,19 +60,21 @@ const AnimeList = () => {
     
   ];
 
+  
+
   return (
-    <div className="flex overflow-x-scroll scrollbar-hide gap-2">
-      <div class="controls z-30 absolute top-24 left-8 w-[40px] h-[40px]">
+    <div className="flex overflow-x-scroll scrollbar-hide gap-2" id="animeList">
+      <button class="controls z-30 absolute top-24 left-8 w-[40px] h-[40px]" id="scrollLeft">
         <i class="prev bg-black text-white flex items-center justify-center rounded-full ri-arrow-left-line w-full h-full border-slate-500 border-2"></i>
-      </div>
+      </button>
       
-      <div class="controls z-30 absolute top-24 right-8 w-[40px] h-[40px] ">
+      <button class="controls z-30 absolute top-24 right-8 w-[40px] h-[40px] " id="scrollRight">
         <i class="next bg-black text-white flex items-center justify-center rounded-full ri-arrow-right-line w-full h-full border-slate-500 border-2"></i>
-      </div>
+      </button>
 
       {animes.map((anime, index) => (
         <div
-          className="flex-shrink-0 w-40 h-60 m-2 bg-gray-800 rounded-lg overflow-hidden"
+          className="flex-shrink-0 w-40 h-60 m-2 bg-gray-800 rounded-lg overflow-hidden border-b-4 border-blue-700"
           key={index}
         >
           <img
@@ -79,7 +82,7 @@ const AnimeList = () => {
             alt={anime.title}
             className="w-full h-3/4 object-cover"
           />
-          <h3 className="text-white text-center mt-2">{anime.title}</h3>
+          <h3 className="text-white text-center mt-4 title m-2">{anime.title}</h3>
         </div>
         
       ))}

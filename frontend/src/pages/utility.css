@@ -5,6 +5,6 @@
     top: 0;
     right: 0;
     z-index: 10;
-    background:  linear-gradient(to top, #141416 0%, #14141686 50%, #eeeef100 100%);
+    background:  linear-gradient(to right, #141416 0%, #14141686 50%, #eeeef100 100%);
 }
 

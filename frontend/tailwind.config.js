@@ -8,7 +8,8 @@ export default {
     extend: {
       fontFamily: {
         creepster: ['Creepster', 'cursive'], // Add the Creepster font
-        Roboto: ['Roboto']
+        Roboto: ['Roboto'],
+        Host: ['Host Grotesk']
       },},
     },
   plugins: [],

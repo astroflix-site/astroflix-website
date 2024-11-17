@@ -1,46 +1,78 @@
-import React from 'react';
+import React,{useEffect} from 'react';
 import WatchBtn from '../components/Buttons/WatchBtn';
 import WatchLaterBtn from '../components/Buttons/WatchLaterBtn';
 import AnimeList from '../components/Cards/AnimeList';
 import BookmarkButton from '../components/Buttons/BookmarkButton';
+import { Link } from 'react-router-dom';
+import Search from '../components/Search';
 import './utility.css'
+// import './Home.js'
 const Home = () => {
+  useEffect(() => {
+    // Get the DOM elements
+    const animeList = document.getElementById("animeList");
+    const scrollLeftBtn = document.getElementById("scrollLeft");
+    const scrollRightBtn = document.getElementById("scrollRight");
+
+    if (animeList && scrollLeftBtn && scrollRightBtn) {
+      // Scroll amount
+      const scrollAmount = 300;
+
+      // Event listeners
+      const scrollLeft = () => {
+        animeList.scrollBy({ left: -scrollAmount, behavior: "smooth" });
+      };
+
+      const scrollRight = () => {
+        animeList.scrollBy({ left: scrollAmount, behavior: "smooth" });
+      };
+
+      scrollLeftBtn.addEventListener("click", scrollLeft);
+      scrollRightBtn.addEventListener("click", scrollRight);
+
+      // Cleanup listeners on component unmount
+      return () => {
+        scrollLeftBtn.removeEventListener("click", scrollLeft);
+        scrollRightBtn.removeEventListener("click", scrollRight);
+      };
+    }
+  }, []);
+
+  const navLinks = [
+    { name: "Home", path: "/" },
+    { name: "Browse", path: "/browse" },
+    { name: "Wishlist", path: "/bookmark" }
+  ];
   return (<>
-    <div className="black-shade"></div>
-    <div className="relative w-full h-screen bg-neutral-800">
-      {}
-      <video
-        src="/videos/clip.mp4"
-        autoPlay
-        loop
-        muted
-        className="absolute top-0 left-0 w-full h-4/5 object-cover z-0 bg-opacity-80"
-      />
-      {}
-      <div className="relative z-10 flex flex-col justify-center items-center md:items-start  pb-20 md:pb-32 lg:pb-40 w-full h-full text-center md:text-left">
-        {}
-        <div className="flex flex-col mt-8 md:mt-0 px-4 md:pl-10 lg:pl-16 xl:pl-28 max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl">
-          <h1 className="text-white text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-6xl font-bold font-Roboto">
-            Chainsaw Man
-          </h1>
-          <p className="text-white font-medium text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl mt-4">
-            Denji has a simple dream - to live a happy and peaceful life, spending time with a girl.
-          </p>
-        </div>
+    <div className="main bg-[#192026] w-full h-screen flex flex-col items-center">
+      <nav className='w-[90%]  h-14 mt-8 flex items-center justify-between p-4'>
+        <div className="name text-[#FFFFFF] text-4xl  font-Host">AstroFlix</div>
+        <ul className='flex gap-10'>
+        {navLinks.map((link, index) => (
+            <li key={index}>
+              <Link to={link.path} className="text-[#878786] text-lg">
+                {link.name}
+              </Link>
+            </li>
+          ))}
+        </ul>
+        {/* <input type="search" name="Search" id="" placeholder='Search' className='bg-[#374151] rounded-full p-2 text-white' /> */}
+        <Search/>
+      </nav>
+      <div className="spotlight w-[90%] h-[500px] bg-white rounded-xl m-6 overflow-hidden relative">
+          <div className="black-shade w-full h-full"></div>
+          <div className="spotlight-content ">
+            
+            <img src="https://img.uhdpaper.com/wallpaper/spy-x-family-poster-501@1@g-preview.jpg?dl" alt="" className="spotlight-image object-cover w-full h-full" />
+            <div className="spotlight-text absolute top-10 left-5 z-20 font-Host w-[500px] h-full">
+              <h1 className="text-4xl  text-white ">Spy x Family</h1>
+              <p className="text-lg text-[#ffffff88] mt-4">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Deleniti perspiciatis molestiae libero delectus at dolorum reprehenderit distinctio culpa consectetur atque. </p>
 
-        {}
-        <div className="mt-4 md:pl-10 lg:pl-16 xl:pl-28 flex space-x-2 px-4 md:px-0">
-          <WatchBtn />
-          <BookmarkButton/>
-        </div>
-
-        {}
-        <div className="fixed sm: bottom-1 px-4 sm:px-10 md:px-16 lg:px-20 xl:px-24 w-full">
-          <AnimeList />
-        </div>
+            </div>
+          </div>
       </div>
-
     </div>
+    
 
     </>
   );
