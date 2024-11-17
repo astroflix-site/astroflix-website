@@ -1,9 +1,18 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import BookmarkButton from '../components/Buttons/BookmarkButton';
-import AnimeCard from '../components/Cards/AnimeCard';
-
+import AnimeList from '../components/Cards/AnimeList';
+import { useNavigate } from 'react-router-dom';
 const Bookmark = () => {
+  const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
+  const navigate = useNavigate();
+  useEffect(() => {
+    // Check if not logged in and redirect to login
+    if (!isLoggedIn) {
+      navigate('/login');
+    }
+  }, [isLoggedIn, navigate]); // Depend on isLoggedIn to check if user is logged in
+
   // Mock list of anime content with title and image
   const animeList = [
     { 
@@ -46,7 +55,7 @@ const Bookmark = () => {
             key={anime.id}
             className="relative bg-neutral-700 rounded-lg shadow-lg p-4"
           >
-            <AnimeCard title={anime.title} image={anime.image} />
+            <AnimeList title={anime.title} image={anime.image} />
             <div className="">
               <BookmarkButton contentId={anime.id} />
             </div>

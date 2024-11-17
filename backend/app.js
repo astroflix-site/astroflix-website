@@ -9,7 +9,7 @@ app.use(cookieParser());
 const cors = require('cors');
 
 app.use(cors({
-    origin: 'http://localhost:5173', // Frontend origin
+    origin: 'https://cbpsc3gn-5173.inc1.devtunnels.ms', // Frontend origin
     credentials: true, // Allow credentials (cookies) to be sent
 }));
 //all routes

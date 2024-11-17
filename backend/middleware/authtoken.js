@@ -3,11 +3,12 @@ const jwt = require('jsonwebtoken');
 
 
 const authenticateToken = (req, res, next) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-
-    if (token == null) return res.status(401).json({ message: 'Token required' });
-
+    console.log('Cookies:', req.cookies); // Debugging line
+    const token = req.cookies.AudCastToken;
+  
+    if (!token) {
+        return res.status(401).json({ message: "Authentication token is missing" });
+      }
     jwt.verify(token, process.env.TOKEN_SECRET, (err, user) => {
         if (err) return res.status(403).json({ message: 'Invalid Token' });
         req.user = user;
@@ -15,4 +16,4 @@ const authenticateToken = (req, res, next) => {
     });
 };
 
-module.exports = authtoken;
+module.exports = authenticateToken;

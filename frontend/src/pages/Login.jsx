@@ -21,7 +21,7 @@ const Login = () => {
     
     const onSubmit = async (data) => {
         try {
-            const response = await fetch('http://localhost:3000/api/login', {
+            const response = await fetch('https://cbpsc3gn-3000.inc1.devtunnels.ms/api/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -37,6 +37,7 @@ const Login = () => {
     
             if (response.ok) {
                 console.log(responseData.message)
+                
                 dispatch(authActions.login());
                 navigate("/profile")
             } else {

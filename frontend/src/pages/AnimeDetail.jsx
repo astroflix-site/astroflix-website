@@ -4,6 +4,7 @@ import ReactPlayer from 'react-player'; // Ensure you have the react-player inst
 // Your custom button components (import them if needed)
 import WatchBtn from '../components/Buttons/WatchBtn';
 import WatchLaterBtn from '../components/Buttons/WatchLaterBtn';
+import BookmarkButton from '../components/Buttons/BookmarkButton';
 
 function AnimeDetail() {
   const [selectedSeason, setSelectedSeason] = useState('Season 1');
@@ -46,6 +47,7 @@ function AnimeDetail() {
             playing
             muted
             loop
+            controls
             width="100%"
             height="auto"
           />
@@ -58,7 +60,7 @@ function AnimeDetail() {
             Lorem ipsum dolor sit amet consectetur adipisicing elit. Nisi officiis eius quidem nostrum omnis iste, sint repellat? Ratione consequatur, harum totam reprehenderit nulla quidem, dolor perspiciatis laboriosam at itaque repellendus, facilis similique ab repellat sed! Libero quidem, cum ullam aperiam modi perspiciatis esse repudiandae, temporibus iusto saepe accusantium quibusdam voluptate soluta, officiis porro amet!
           </p>
           <div className="flex space-x-2 mb-4">
-            <WatchLaterBtn />
+            <BookmarkButton/>
           </div>
 
           {/* Episode List */}

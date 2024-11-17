@@ -16,6 +16,15 @@ const user = new mongoose.Schema({
         unique: true,
         required: true
     },
+    role: {
+        type: String,
+        enum: ['user', 'admin'],
+        default: 'user'
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now
+    },
     bookmarks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Content' }]
 })
 
