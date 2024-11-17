@@ -5,7 +5,7 @@ import Navbar from '../components/Navbar'
 const mainLayout = () => {
   return (
     <div className='relative'>
-      <Navbar/>
+      {/* <Navbar/> */}
       <Outlet />
     </div>
   )
