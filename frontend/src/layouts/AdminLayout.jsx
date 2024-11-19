@@ -11,7 +11,7 @@ function AdminLayout() {
       </div>
 
       {/* Main content area */}
-      <div className="flex-1 p-6 bg-neutral-900">
+      <div className="flex-1 p-6 bg-neutral-900 text-gray-200">
         <Outlet />
       </div>
     </div>

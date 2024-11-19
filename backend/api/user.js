@@ -4,8 +4,9 @@ const User = require('../models/user');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const IsAuth = require('../middleware/auth');
-const IsAdmin = require('../middleware/admin')
-const authenticateToken = require('../middleware/authtoken')
+const IsAdmin = require('../middleware/authtoken')
+const multer = require('multer')
+
 //sign-up route
 router.post("/register", async (req, res) => {
   try {
@@ -87,6 +88,7 @@ router.post("/login", async(req, res)=>{
     id: existingUser._id,
     username: existingUser.username,
     email: email,
+    role: existingUser.role,
     message: "Logged In Succesfully"
    });
   
@@ -116,7 +118,7 @@ router.get('/check-cookie', async(req,res)=>{
     const token = req.cookies.AniFlexToken;
     if (token) {
       return res.status(200).json({message:true})
-    }//aby pora object ly lo fir bad main nikal lana cookie or role
+    }
     return res.status(200).json({message:false})
   } catch (error) {
     return res.status(400).json(error)
@@ -143,6 +145,7 @@ router.get('/user-details',IsAuth, async (req,res)=>{
   try {
     const {email} = req.user;
     const existingUser = await User.findOne({email:email}).select("-password");
+    const role = req.user.role;
     return res.status(200).json({user:existingUser});
 
   } catch (error) {
@@ -171,29 +174,5 @@ router.delete('/delete-user/:id', IsAuth, IsAdmin, async (req, res) => {
     return res.status(500).json({ error: 'Error deleting user', details: error.message });
   }
 });
-
-router.get("/admin-only", checkRole("admin"), (req, res) => {
-  res.json({ message: "Welcome, Admin!" });
-});
-
-
-// check user role 
-// router.get('/role', async (req, res) => {
-//   try {
-//       const token = req.cookies.AniFlexToken;
-//       const userId = req.user.id; // Get user ID from the token
-//       const user = await User.findById(userId); // Fetch user from the database
-
-//       if (!user) {
-//           return res.sendStatus(404); // User not found
-//       }
-
-//       // Send the user's role in the response
-//       res.json({ role: user.role });
-//   } catch (error) {
-//       console.error(error);
-//       res.sendStatus(500); // Internal server error
-//   }
-// });
 
 module.exports = router;

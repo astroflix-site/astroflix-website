@@ -2,11 +2,10 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 
 const IsAuth = async (req, res, next) => {
-  console.log('Cookies:', req.cookies); // Debugging line
-  const token = req.cookies.AudCastToken;
+  const token = req.cookies.AniFlexToken;
 
   if (!token) {
-    return res.status(401).json({ message: "Authentication token is missing" });
+    return res.status(401).json({ message: " token is missing" });
   }
 
   try {
@@ -16,7 +15,6 @@ const IsAuth = async (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, secretKey);
-    console.log('Decoded token:', decoded); // Debugging line
     const user = await User.findById(decoded.id);
 
     if (!user) {

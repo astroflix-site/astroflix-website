@@ -4,7 +4,7 @@ import WatchLaterBtn from '../components/Buttons/WatchLaterBtn';
 import AnimeList from '../components/Cards/AnimeList';
 import BookmarkButton from '../components/Buttons/BookmarkButton';
 import { Link } from 'react-router-dom';
-import Search from '../components/Search';
+import Search from '../components/Nav/Search';
 import './utility.css'
 // import './Home.js'
 const Home = () => {
@@ -41,7 +41,8 @@ const Home = () => {
   const navLinks = [
     { name: "Home", path: "/" },
     { name: "Browse", path: "/browse" },
-    { name: "Wishlist", path: "/bookmark" }
+    { name: "Wishlist", path: "/bookmark" },
+    { name: "Admin", path: "/admin/users" }
   ];
   return (<>
     <div className="main bg-[#192026] w-full h-screen flex flex-col items-center">
