@@ -3,7 +3,7 @@ import React from 'react'
 function WatchBtn() {
   return (
     <div>
-      <button className="bg-white font-medium border text-black border-gray-200 rounded-2xl text-lg py-3 px-4 w-28">Watch</button>
+      <button className="bg-[#868686] font-medium  text-[#12191F]  rounded-2xl text-lg  w-28 h-10 font-Host">Watch</button>
     </div>
   )
 }

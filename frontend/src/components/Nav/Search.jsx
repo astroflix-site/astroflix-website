@@ -51,7 +51,7 @@ const Search = () => {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Search Anime..."
-          className=" bg-[#374151] rounded-full p-2 text-white'"
+          className=" bg-[#374151] rounded-full p-2 text-white font-Host"
           readOnly // Input is read-only to trigger menu opening
         />
       </form>
@@ -71,13 +71,13 @@ const Search = () => {
           <form
             onSubmit={handleSearch}
             className="w-full max-w-lg flex items-center border-b border-gray-600 pb-3"
-          >border-red-300
+          >
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search Anime..."
-              className="w-full px-4 py-2 text-base text-white bg-transparent placeholder-gray-500 focus:outline-none"
+              className="font-Host w-full px-4 py-2 text-base text-white bg-transparent placeholder-gray-500 focus:outline-none"
               autoFocus // Focuses input when menu opens
             />
           </form>
