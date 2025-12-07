@@ -1,0 +1,147 @@
+Master Prompt: AniFlex VOD Platform (Cinematic Dark Edition)
+
+Role: You are an expert Senior Full-Stack Developer specializing in the MERN stack.
+
+Objective: Build a fully responsive, modern Video-On-Demand (VOD) anime streaming web application called "AniFlex". The application must consume a specific set of backend APIs provided below.
+
+Design System & Theme:
+
+    Theme: "Cinematic Dark" / Monochromatic Premium.
+
+    Color Palette:
+
+        Backgrounds: True Black (#000000) and Deep Matte Gray (#121212).
+
+        Primary Text: High-contrast White (#FFFFFF).
+
+        Secondary Text: Light Slate/Gray (#9CA3AF).
+
+        Accents: No colors. Use White (#FFF) for primary buttons/actions (with black text) and Dark Gray (#333) for secondary elements.
+
+    UI Feel: Minimalist, sleek, immersive. Use subtle gray borders (border-neutral-800), standard border-radius (rounded-md), and crisp shadows. No neon or gradients.
+
+Tech Stack:
+
+    Frontend: React.js (Vite), Tailwind CSS, React Router DOM v6, Axios, Context API (for Auth).
+
+    Backend: Node/Express (Existing APIs).
+
+1. Core Features & Page Structure
+A. Global Components
+
+    Navbar: Fixed/Sticky top. Deep Black background. Logo in White. Search Bar (Gray background). Links: Home, My List, Profile.
+
+    Footer: Simple black footer with gray text.
+
+B. User Side (Client)
+
+    Home Page:
+
+        Hero Section: Full-width immersive banner of the latest anime. White typography.
+
+        Search Bar: Prominent search input (Dark Gray bg, White text). Uses GET /api/search-playlists.
+
+        Sections: "Latest Uploads" and "Trending". Horizontal scrolling rows of Anime Cards.
+
+        Anime Card: Minimalist. Image with a subtle hover zoom. Title appears on hover or below in white text.
+
+    Anime Detail Page (/anime/:playlistId):
+
+        Fetches data: GET /api/playlist/:playlistId.
+
+        Layout: Large background backdrop (dimmed). Poster image on the left. Details (Synopsis, Genre, Rating) on the right in white.
+
+        Episode List: Vertical list of episodes. Dark gray background, turning white on hover.
+
+        Bookmark: Simple "Add to List" button (Icon toggle).
+
+    Player Page (/watch/:videoTitle):
+
+        Video Player: Centered, cinema mode (black background). Fetches: GET /api/videos/:video_title.
+
+        Recommendations: Grid of related anime below the player.
+
+    User Dashboard:
+
+        Simple dark card layout showing User Details (GET /api/user-details).
+
+        Bookmarks: Grid view of saved content (GET /api/bookmarks/:userId).
+
+C. Admin Panel (/admin)
+
+    Access: Protected by IsAdmin.
+
+    Style: Clean data dashboard. Black background, white data tables with thin gray dividers.
+
+    Features:
+
+        Add Series: Form to POST to /api/new-series.
+
+        Upload Video: Form to POST to /api/upload (Handle Multipart/Form-Data).
+
+        User List: Table fetching /api/users with a "Delete" action.
+
+2. API Integration Logic
+
+Base URL: http://localhost:5000 (or relative /api).
+
+Auth Handling:
+
+    Login: POST /api/login -> Sets AniFlexToken cookie (HTTP-Only).
+
+    Session Check: On app mount, run GET /api/check-cookie. If false, redirect protected routes to Login.
+
+    Logout: POST /api/logout.
+
+Data Fetching Strategy:
+
+    Search: GET /api/search-playlists?title={query}.
+
+    Streaming: GET /api/videos/:video_title returns the stream URL (PlayerX).
+
+    Playlist Data: GET /api/playlist/:playlistId returns metadata + videos array.
+
+3. API Reference List
+JavaScript
+
+/* AUTH */
+POST   /api/register             // Body: username, email, password
+POST   /api/login                // Body: email, password
+POST   /api/logout
+GET    /api/check-cookie         // Returns { message: true/false }
+GET    /api/users                // List all users
+GET    /api/user-details         // Current user data
+DELETE /api/delete-user/:id      // Admin only
+
+/* VIDEO & SERIES */
+POST   /api/new-series           // Admin. Body: title, desc, imageURL, genre, etc.
+POST   /api/upload               // Admin. FormData: video, playlistId, title, episodeNumber
+GET    /api/search-playlists     // Query: ?title=...
+GET    /api/videos/:video_title  // Get single video stream data
+GET    /api/playlist/:playlistId // Get series metadata + episode list
+POST   /api/playlist/:playlistId/add-video // Link existing video
+
+/* USER ACTIONS */
+POST   /api/bookmark             // Body: userId, contentId
+POST   /api/unbookmark           // Body: userId, contentId
+GET    /api/bookmarks/:userId    // Get user's saved list
+
+4. Implementation Instructions
+
+    Initialize: Create React app with Tailwind CSS configured for "Dark Mode" by default.
+
+    Theme Config: In tailwind.config.js, extend colors to include a specific "cine-black" (#050505) and "cine-gray" (#1a1a1a).
+
+    State: Set up AuthContext to manage user and isAdmin states via the /api/check-cookie endpoint.
+
+    Development Order:
+
+        Build the Navbar and Layout (Black bg, White text).
+
+        Build Auth Pages (Login/Register) centered on black screen.
+
+        Build Home Page with dummy data, then connect search-playlists.
+
+        Build Details & Player pages connected to their GET endpoints.
+
+        Build Admin Dashboard forms.

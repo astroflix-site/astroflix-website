@@ -1,121 +1,182 @@
-import React, { useState } from 'react';
-import ReactPlayer from 'react-player'; // Ensure you have the react-player installed
 
-// Your custom button components (import them if needed)
-import WatchBtn from '../components/Buttons/WatchBtn';
-import WatchLaterBtn from '../components/Buttons/WatchLaterBtn';
-import BookmarkButton from '../components/Buttons/BookmarkButton';
+import { useEffect, useState } from "react";
+import { useRoute, Link } from "wouter";
+import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
+import { Button } from "@/components/ui/button";
+import { getSeriesById, addBookmark, removeBookmark, getBookmarks } from "@/lib/api";
+import { Play, Plus, Check } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
-function AnimeDetail() {
-  const [selectedSeason, setSelectedSeason] = useState('Season 1');
-  const [episodeIndex, setEpisodeIndex] = useState(5); // Initialize to show first 5 episodes
+export default function AnimeDetail() {
+  const [match, params] = useRoute("/anime/:id");
+  const [anime, setAnime] = useState(null);
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const { user } = useAuth();
+  const { toast } = useToast();
 
-  // Dummy data for episodes (replace with your actual data)
-  const episodes = [
-    { title: 'Episode 1', duration: '24 min', image: 'image_link_1' },
-    { title: 'Episode 2', duration: '24 min', image: 'image_link_2' },
-    { title: 'Episode 3', duration: '24 min', image: 'image_link_3' },
-    { title: 'Episode 4', duration: '24 min', image: 'image_link_4' },
-    { title: 'Episode 5', duration: '24 min', image: 'image_link_5' },
-    { title: 'Episode 6', duration: '24 min', image: 'image_link_6' },
-    { title: 'Episode 7', duration: '24 min', image: 'image_link_7' },
-    { title: 'Episode 8', duration: '24 min', image: 'image_link_8' },
-    // Add more episodes here...
-  ];
+  useEffect(() => {
+    if (params?.id) {
+      setLoading(true);
 
-  const handleSeasonChange = (event) => {
-    setSelectedSeason(event.target.value);
-  };
+      // Fetch series details
+      getSeriesById(params.id)
+        .then((data) => {
+          if (data) {
+            const mappedAnime = {
+              id: data._id,
+              title: data.title,
+              description: data.description,
+              image: data.imageURL,
+              backdrop: data.backdrop || data.imageURL,
+              rating: data.rating,
+              year: data.releaseDate ? new Date(data.releaseDate).getFullYear() : "N/A",
+              status: data.status,
+              genre: data.genre ? data.genre.split(',').map(g => g.trim()) : [],
+              episodes: data.episodes ? data.episodes.map(ep => ({
+                id: ep._id,
+                number: ep.episodeNumber,
+                title: ep.title,
+                duration: "24:00",
+                url: ep.url
+              })) : []
+            };
+            setAnime(mappedAnime);
+          }
+        })
+        .catch((err) => {
+          console.error(err);
+          setError("Failed to load series details.");
+        })
+        .finally(() => setLoading(false));
 
-  // Show only the episodes that should be displayed
-  const displayedEpisodes = episodes.slice(0, episodeIndex);
+      // Check if bookmarked
+      if (user) {
+        getBookmarks().then(bookmarks => {
+          const isMarked = bookmarks.some(b => b._id === params.id);
+          setIsBookmarked(isMarked);
+        }).catch(console.error);
+      }
+    }
+  }, [params?.id, user]);
 
-  // Handle "Next Episode" button click
-  const loadMoreEpisodes = () => {
-    if (episodeIndex < episodes.length) {
-      setEpisodeIndex(episodeIndex + 1); // Show one more episode
+  const handleBookmarkToggle = async () => {
+    if (!user) {
+      toast({ title: "Login Required", description: "Please login to add to your list.", variant: "destructive" });
+      return;
+    }
+
+    try {
+      if (isBookmarked) {
+        await removeBookmark(anime.id);
+        setIsBookmarked(false);
+        toast({ title: "Removed from List", description: `${anime.title} has been removed.` });
+      } else {
+        await addBookmark(anime.id);
+        setIsBookmarked(true);
+        toast({ title: "Added to List", description: `${anime.title} has been added.` });
+      }
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to update list.", variant: "destructive" });
     }
   };
 
+  if (loading) return <div className="min-h-screen bg-black flex items-center justify-center text-white">Loading...</div>;
+  if (error) return <div className="min-h-screen bg-black flex items-center justify-center text-red-500">{error}</div>;
+  if (!anime) return <div className="min-h-screen bg-black flex items-center justify-center text-white">Series not found</div>;
+
   return (
-    <div className="flex pt-28 flex-col p-6 bg-neutral-800 min-h-screen">
-      <div className="flex flex-col md:flex-row space-y-6 md:space-x-6">
-        {/* Video Player */}
-        <div className="flex-1 mb-6">
-          <ReactPlayer
-            url="/videos/clip.mp4" // Use the video from the public folder
-            playing
-            muted
-            loop
-            controls
-            width="100%"
-            height="auto"
-          />
-        </div>
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
+      <Navbar />
 
-        {/* Anime Info */}
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold text-neutral-100 mb-4">Anime Title</h1>
-          <p className="text-neutral-300 mb-4">
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Nisi officiis eius quidem nostrum omnis iste, sint repellat? Ratione consequatur, harum totam reprehenderit nulla quidem, dolor perspiciatis laboriosam at itaque repellendus, facilis similique ab repellat sed! Libero quidem, cum ullam aperiam modi perspiciatis esse repudiandae, temporibus iusto saepe accusantium quibusdam voluptate soluta, officiis porro amet!
-          </p>
-          <div className="flex space-x-2 mb-4">
-            <BookmarkButton/>
+      {/* Backdrop */}
+      <div className="relative h-[60vh] w-full overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent z-10" />
+        <img src={anime.backdrop} alt={anime.title} className="w-full h-full object-cover opacity-50" />
+      </div>
+
+      <div className="container mx-auto px-6 -mt-32 relative z-20 pb-20">
+        <div className="flex flex-col md:flex-row gap-8">
+          {/* Poster */}
+          <div className="flex-none w-64 rounded-lg overflow-hidden shadow-2xl border border-white/10 hidden md:block">
+            <img src={anime.image} alt={anime.title} className="w-full h-auto" />
           </div>
 
-          {/* Episode List */}
-          <div className="mb-6">
-            <h2 className="text-2xl font-semibold mb-2 text-neutral-100">Episodes</h2>
-            <ul className="list-disc pl-6 space-y-1 text-neutral-300">
-              {displayedEpisodes.map((episode, index) => (
-                <li key={index} className="max-h-6">
-                  <div className="flex items-center">
-                    <img src={episode.image} alt='' className="w-12 h-12 rounded mr-3" />
-                    <span>{episode.title} - <span className="text-neutral-400">{episode.duration}</span></span>
+          {/* Details */}
+          <div className="flex-1 pt-8">
+            <h1 className="text-4xl md:text-5xl font-display font-bold text-white mb-4">{anime.title}</h1>
+
+            <div className="flex items-center gap-4 text-sm text-muted-foreground mb-6">
+              <span className="text-green-400 font-bold">{anime.rating} Match</span>
+              <span>{anime.year}</span>
+              <span>{anime.episodes.length} Episodes</span>
+              <span className="border border-white/20 px-2 py-0.5 rounded text-xs">{anime.status}</span>
+            </div>
+
+            <div className="flex gap-4 mb-8">
+              <Link href={anime.episodes.length > 0 ? `/watch/${anime.episodes[0].id}` : "#"}>
+                <Button className="bg-white text-black hover:bg-white/90 font-bold px-8">
+                  <Play className="w-4 h-4 mr-2 fill-black" />
+                  Play Episode 1
+                </Button>
+              </Link>
+              <Button
+                variant="outline"
+                className="border-white/20 text-white hover:bg-white/10"
+                onClick={handleBookmarkToggle}
+              >
+                {isBookmarked ? <Check className="w-4 h-4 mr-2" /> : <Plus className="w-4 h-4 mr-2" />}
+                My List
+              </Button>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-8">
+              <div className="md:col-span-2">
+                <h3 className="text-lg font-semibold text-white mb-2">Synopsis</h3>
+                <p className="text-muted-foreground leading-relaxed mb-6">{anime.description}</p>
+              </div>
+              <div className="md:col-span-1 space-y-4 text-sm">
+                <div>
+                  <span className="text-muted-foreground">Genres:</span>
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {anime.genre.map(g => (
+                      <span key={g} className="text-white hover:underline cursor-pointer">{g}</span>
+                    ))}
                   </div>
-                </li>
-              ))}
-            </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* Episode List */}
+            <div className="mt-12">
+              <h3 className="text-2xl font-display font-bold text-white mb-6">Episodes</h3>
+              <div className="grid gap-2">
+                {anime.episodes.map((ep) => (
+                  <Link href={`/watch/${ep.id}`} key={ep.id}>
+                    <div className="group flex items-center gap-4 p-4 rounded-md hover:bg-white/10 transition-colors cursor-pointer border-b border-white/5 last:border-0">
+                      <div className="w-8 text-center text-muted-foreground font-mono">{ep.number}</div>
+                      <div className="flex-1">
+                        <h4 className="text-white font-medium group-hover:text-primary transition-colors">{ep.title}</h4>
+                        <span className="text-xs text-muted-foreground">{ep.duration}</span>
+                      </div>
+                      <Play className="w-4 h-4 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
+                  </Link>
+                ))}
+                {anime.episodes.length === 0 && (
+                  <div className="text-muted-foreground">No episodes available yet.</div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Select Season Dropdown */}
-      <div className="mb-4">
-        <label htmlFor="seasons" className="block mb-2 text-neutral-100">Select Season:</label>
-        <select
-          id="seasons"
-          value={selectedSeason}
-          onChange={handleSeasonChange}
-          className="border border-gray-300 rounded p-2 bg-neutral-700 text-neutral-100"
-        >
-          <option value="Season 1">Season 1</option>
-          <option value="Season 2">Season 2</option>
-          <option value="Season 3">Season 3</option>
-        </select>
-      </div>
-
-      {/* More Like This */}
-      <div className="mb-4">
-        <h2 className="text-xl font-semibold mb-2 text-neutral-100">More Like This</h2>
-        <div className="flex gap-4">
-          {/* Similar anime list (replace with actual images and titles) */}
-          <div className="bg-neutral-700 p-4 rounded shadow">
-            <img src="image_link_A" alt="Anime A" className="w-[8vw] h-[12vh] mb-2" />
-            <h3 className="text-center text-neutral-300">Anime A</h3>
-          </div>
-          <div className="bg-neutral-700 p-4 rounded shadow">
-            <img src="image_link_B" alt="Anime B" className="w-[8vw] h-[12vh] mb-2" />
-            <h3 className="text-center text-neutral-300">Anime B</h3>
-          </div>
-          <div className="bg-neutral-700 p-4 rounded shadow">
-            <img src="image_link_C" alt="Anime C" className="w-[8vw] h-[12vh] mb-2" />
-            <h3 className="text-center text-neutral-300">Anime C</h3>
-          </div>
-        </div>
-      </div>
+      <Footer />
     </div>
   );
 }
 
-export default AnimeDetail;

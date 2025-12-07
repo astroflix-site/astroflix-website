@@ -1,206 +1,122 @@
-import React, { useEffect } from "react";
-import WatchBtn from "../components/Buttons/WatchBtn";
-import WatchLaterBtn from "../components/Buttons/WatchLaterBtn";
-import AnimeList from "../components/Cards/AnimeList";
-import BookmarkButton from "../components/Buttons/BookmarkButton";
-import { Link } from "react-router-dom";
-import Search from "../components/Nav/Search";
-import "./utility.css";
-// import './Home.js'
-const Home = () => {
-  
-  const scroll = (containerClass, direction) => {
-    const container = document.querySelector(`.${containerClass}`);
-    const scrollAmount = 200; // Adjust as needed
-    if (container) {
-      if (direction === "next") {
-        container.scrollBy({ left: scrollAmount, behavior: "smooth" });
-      } else if (direction === "prev") {
-        container.scrollBy({ left: -scrollAmount, behavior: "smooth" });
+import { useEffect, useState } from "react";
+import { Link } from "wouter";
+import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
+import { AnimeCard } from "@/components/AnimeCard";
+import { Button } from "@/components/ui/button";
+import { getAllSeries } from "@/lib/api";
+import { Play, Info } from "lucide-react";
+
+export default function Home() {
+  const [trending, setTrending] = useState([]);
+  const [latest, setLatest] = useState([]);
+  const [featured, setFeatured] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const seriesData = await getAllSeries();
+
+        // Map backend data to frontend structure if needed
+        const mappedData = seriesData.map(s => ({
+          id: s._id,
+          title: s.title,
+          description: s.description,
+          image: s.imageURL,
+          backdrop: s.backdrop || s.imageURL, // Fallback to poster if no backdrop
+          rating: s.rating,
+          genre: s.genre ? s.genre.split(',').map(g => g.trim()) : [],
+          year: s.releaseDate ? new Date(s.releaseDate).getFullYear() : "N/A",
+          year: s.releaseDate ? new Date(s.releaseDate).getFullYear() : "N/A",
+          status: s.status,
+          episodes: s.episodes || []
+        }));
+
+        setTrending(mappedData);
+        setLatest([...mappedData].reverse()); // Simple reverse for latest for now
+        if (mappedData.length > 0) {
+          setFeatured(mappedData[0]);
+        }
+      } catch (error) {
+        console.error("Failed to fetch series:", error);
       }
-    }
-  };
-  
+    };
+    fetchData();
+  }, []);
 
-  const cards = [
-    {
-      title: "vinand saga",
-      image:
-        "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx153288-tD2OmKy5CJab.jpg",
-    },
-    {
-      title: "vinand saga dsfdhf dfsfdsf sdfdsf",
-      image:
-        "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx153288-tD2OmKy5CJab.jpg",
-    },
-    {
-      title: "vinand saga",
-      image:
-        "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx153288-tD2OmKy5CJab.jpg",
-    },
-    {
-      title: "vinand saga",
-      image:
-        "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx153288-tD2OmKy5CJab.jpg",
-    },
-    {
-      title: "vinand saga",
-      image:
-        "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx153288-tD2OmKy5CJab.jpg",
-    },
-    {
-      title: "vinand saga",
-      image:
-        "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx153288-tD2OmKy5CJab.jpg",
-    },
-    {
-      title: "vinand saga",
-      image:
-        "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx153288-tD2OmKy5CJab.jpg",
-    },
-    {
-      title: "vinand saga",
-      image:
-        "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx153288-tD2OmKy5CJab.jpg",
-    },
-    {
-      title: "vinand saga",
-      image:
-        "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx153288-tD2OmKy5CJab.jpg",
-    },
-    {
-      title: "vinand saga",
-      image:
-        "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx153288-tD2OmKy5CJab.jpg",
-    },
-  ];
   return (
-    <>
-      <div className=" bg-[#192026] w-full h-full flex flex-col items-center">
-        <div className="spotlight w-[90%] h-[500px] bg-white rounded-xl m-6 overflow-hidden relative">
-          <div className="black-shade "></div>
-          <div className="spotlight-content ">
+    <div className="min-h-screen bg-background flex flex-col">
+      <Navbar />
+
+      {/* Hero Section */}
+      {featured && (
+        <div className="relative w-full h-[85vh] lg:h-[95vh] overflow-hidden">
+          <div className="absolute inset-0">
             <img
-              src="https://img.uhdpaper.com/wallpaper/spy-x-family-poster-501@1@g-preview.jpg?dl"
-              alt=""
-              className="spotlight-image object-cover w-full h-full"
+              src={featured.backdrop}
+              alt={featured.title}
+              className="w-full h-full object-cover"
             />
-            <div className="spotlight-text absolute top-52 left-5 z-20 font-Host w-[500px]">
-              <h1 className="spotlight-title text-4xl  text-white">
-                Spy x Family
-              </h1>
-              <p className="spotlight-discriptions text-lg text-[#ffffff88] mt-4 font-Host">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem
-                ipsum dolor sit, amet consectetur adipisicing elit. Deleniti
-                perspiciatis molestiae libero delectus at dolorum reprehenderit
-                distinctio culpa consectetur atque. Lorem ipsum dolor sit, amet
-                consectetur adipisicing elit. Molestias officia reiciendis totam
-                nisi sunt ab ad veniam eius fuga ipsam?{" "}
-              </p>
-              <div className="spotlight-buttons mt-2">
-                <WatchBtn />
-              </div>
+            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/40 to-transparent" />
+          </div>
+
+          <div className="absolute bottom-0 left-0 w-full p-6 lg:p-16 pb-24 z-10 flex flex-col items-start gap-6 max-w-3xl">
+            <h1 className="text-5xl md:text-7xl font-display font-bold text-white leading-none tracking-tighter drop-shadow-2xl">
+              {featured.title}
+            </h1>
+
+            <div className="flex items-center gap-4 text-sm md:text-base font-medium text-white/80">
+              <span className="text-green-400 font-bold">{featured.rating} Match</span>
+              <span>{featured.year}</span>
+              <span className="border border-white/30 px-2 py-0.5 rounded text-xs">HD</span>
+              <span>{featured.genre.join(" • ")}</span>
+            </div>
+
+            <p className="text-muted-foreground text-base md:text-lg line-clamp-3 max-w-xl drop-shadow-md">
+              {featured.description}
+            </p>
+
+            <div className="flex items-center gap-4 mt-4">
+              <Link href={featured.episodes && featured.episodes.length > 0 ? `/watch/${featured.episodes[0]}` : "#"}>
+                <Button size="lg" className="bg-white text-black hover:bg-white/90 font-bold px-8 h-12 text-base rounded-md">
+                  <Play className="w-5 h-5 mr-2 fill-black" />
+                  Play Now
+                </Button>
+              </Link>
+              <Link href={`/anime/${featured.id}`}>
+                <Button size="lg" variant="secondary" className="bg-white/20 text-white hover:bg-white/30 backdrop-blur-sm px-8 h-12 text-base rounded-md border border-white/10">
+                  <Info className="w-5 h-5 mr-2" />
+                  More Info
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
-        <div className="main-section w-[90%]">
-          <div className="popular-anime ">
-            <h1 className="popular-anime-title text-3xl text-white  mb-4 font-Host">
-              <i className="ri-arrow-right-wide-fill text-white "></i>Popular
-              Anime
-            </h1>
-            <div className="relative w-full">
-              {/* Scrollable card container */}
-              <div className="popular-card-container flex w-full overflow-x-scroll scrollbar-hide relative z-0">
-                <div className="cards-wrapper flex space-x-4">
-                  {cards.map((entery, index) => (
-                    <div
-                      key={index}
-                      className="card w-[150px] h-full   overflow-hidden rounded-lg shadow-lg transition-transform duration-200 hover:scale-110"
-                    >
-                      <div className="card-image w-[150px] h-[225px] ">
-                        
-                        <img
-                          src={entery.image}
-                          alt={entery.title}
-                          className="object-cover w-full h-full rounded-lg"
-                        />
-                      </div>
-                      <div className="card-title text-[#F5F5F5] text-center font-Host ">
-                        {entery.title}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+      )}
 
-              
-              <div className="scroller-buttons absolute top-1/2 right-1 transform -translate-y-1/2 z-10 flex flex-col space-y-2  rounded h-full w-10 justify-between">
-                <button
-                  className="nextButton px-3 py-1 bg-gray-700 text-white rounded-md shadow-lg h-[50%]"
-                  onClick={() => scroll("popular-card-container","next")}
-                >
-                  <i className="ri-arrow-right-wide-line font-bold"></i>
-                </button>
-                <button
-                  className="prevButton px-3 py-1 bg-gray-700 text-white rounded-md shadow-lg h-[50%]"
-                  onClick={() => scroll("popular-card-container","prev")}
-                >
-                  <i className="ri-arrow-left-wide-line font-bold"></i>
-                </button>
-              </div>
-            </div>
+      {/* Content Rows */}
+      <div className="relative z-20 -mt-16 pb-20 space-y-12 px-6 lg:px-12">
+        <section>
+          <h2 className="text-xl md:text-2xl font-display font-semibold text-white mb-6">Trending Now</h2>
+          <div className="flex gap-4 overflow-x-auto pb-8 scrollbar-hide -mx-6 px-6 lg:-mx-12 lg:px-12">
+            {trending.map((anime) => (
+              <AnimeCard key={anime.id} anime={anime} />
+            ))}
           </div>
-          <div className="latest-anime my-10 ">
-            <h1 className="latest-anime-title text-3xl text-white  mb-4 font-Host">
-              <i className="ri-arrow-right-wide-fill text-white "></i>Latest Anime
-            </h1>
-            <div className="relative w-full">
-              {/* Scrollable card container */}
-              <div className="latest-card-container flex w-full overflow-x-scroll scrollbar-hide relative z-0">
-                <div className="cards-wrapper flex space-x-4">
-                  {cards.map((entery, index) => (
-                    <div
-                      key={index}
-                      className="card w-[150px] h-full   overflow-hidden rounded-lg shadow-lg transition-transform duration-200 hover:scale-110"
-                    >
-                      <div className="card-image w-[150px] h-[225px] ">
-                        
-                        <img
-                          src={entery.image}
-                          alt={entery.title}
-                          className="object-cover w-full h-full rounded-lg"
-                        />
-                      </div>
-                      <div className="card-title text-[#F5F5F5] text-center font-Host ">
-                        {entery.title}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+        </section>
 
-              
-              <div className="scroller-buttons absolute top-1/2 right-1 transform -translate-y-1/2 z-10 flex flex-col space-y-2  rounded h-full w-10 justify-between">
-                <button
-                  className="nextButton px-3 py-1 bg-gray-700 text-white rounded-md shadow-lg h-[50%]"
-                  onClick={() => scroll("latest-card-container","next")}
-                >
-                  <i className="ri-arrow-right-wide-line font-bold"></i>
-                </button>
-                <button
-                  className="prevButton px-3 py-1 bg-gray-700 text-white rounded-md shadow-lg h-[50%]"
-                  onClick={() => scroll("latest-card-container","prev")}
-                >
-                  <i className="ri-arrow-left-wide-line font-bold"></i>
-                </button>
-              </div>
-            </div>
+        <section>
+          <h2 className="text-xl md:text-2xl font-display font-semibold text-white mb-6">Latest Uploads</h2>
+          <div className="flex gap-4 overflow-x-auto pb-8 scrollbar-hide -mx-6 px-6 lg:-mx-12 lg:px-12">
+            {latest.map((anime) => (
+              <AnimeCard key={anime.id} anime={anime} />
+            ))}
           </div>
-        </div>
+        </section>
       </div>
-    </>
-  );
-};
 
-export default Home;
+      <Footer />
+    </div>
+  );
+}

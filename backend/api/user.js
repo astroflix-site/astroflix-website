@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const User = require('../models/user');
+const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const IsAuth = require('../middleware/auth');
@@ -40,7 +40,7 @@ router.post("/register", async (req, res) => {
         return res.status(400).json({ message: "Username or Email Already Exists" });
       }
     } catch (error) {
-      logger.error(error);
+      console.error(error);
       return res.status(500).json({ message: 'Internal Server Error' });
     }
     try {
@@ -50,22 +50,22 @@ router.post("/register", async (req, res) => {
       await NewUser.save();
       return res.status(201).json({ message: "User Created Successfully" });
     } catch (error) {
-      logger.error(error);
+      console.error(error);
       return res.status(500).json({ message: 'Internal Server Error' });
     }
   } catch (error) {
-    logger.error(error);
+    console.error(error);
     return res.status(500).json({ message: 'Internal Server Error' });
   }
 });
 
-router.post("/login", async(req, res)=>{
+router.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body
+    if (!email || !password) {
+      return res.status(400).json({ message: 'All fields are required' });
+    }
     try {
-        const {email, password} = req.body
-        if (!email || !password) {
-            return res.status(400).json({ message: 'All fields are required' });
-        }
-        try {
       const existingUser = await User.findOne({ email: email });
       if (!existingUser) {
         return res.status(400).json({ message: "Invalid Credentials" });
@@ -73,53 +73,54 @@ router.post("/login", async(req, res)=>{
       //compare the password
       const isValidPassword = await bcrypt.compare(password, existingUser.password);
       if (!isValidPassword) {
-        return res.status(400).json({ message: "Invalid Credentials" });}
-        
-  // generating the jwt token
-  const token = jwt.sign({id: existingUser._id, email: existingUser.email}, process.env.TOKEN_SECRET ,{expiresIn: "30d"})
-  res.cookie("AniFlexToken", token, {
-      httpOnly: true,
-      maxAge: 30 * 24 * 60 * 60 * 1000,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: 'None',
-      path:"/"
-  })
-  return res.status(200).json({
-    id: existingUser._id,
-    username: existingUser.username,
-    email: email,
-    role: existingUser.role,
-    message: "Logged In Succesfully"
-   });
-  
+        return res.status(400).json({ message: "Invalid Credentials" });
+      }
+
+      // generating the jwt token
+      const token = jwt.sign({ id: existingUser._id, email: existingUser.email }, process.env.TOKEN_SECRET, { expiresIn: "30d" })
+      res.cookie("AniFlexToken", token, {
+        httpOnly: true,
+        maxAge: 30 * 24 * 60 * 60 * 1000,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? 'None' : 'Lax',
+        path: "/"
+      })
+      return res.status(200).json({
+        id: existingUser._id,
+        username: existingUser.username,
+        email: email,
+        role: existingUser.role,
+        message: "Logged In Succesfully"
+      });
+
     } catch (error) {
-      logger.error(error);
+      console.error(error);
       return res.status(500).json({ message: 'Internal Server Error' });
     }
-    } catch (error) {
-      return res.status(400).json(error)
-    }
+  } catch (error) {
+    return res.status(400).json(error)
+  }
 })
 // logout
-  router.post('/logout', async(req,res)=>{
-    try {
-      res.clearCookie("AniFlexToken", {
-        httpOnly: true,
-      });
-      return res.status(200).json({message: "Logged Out Succesfully"})
-    } catch (error) {
-      return res.status(400).json(error)
-    }
-  })
+router.post('/logout', async (req, res) => {
+  try {
+    res.clearCookie("AniFlexToken", {
+      httpOnly: true,
+    });
+    return res.status(200).json({ message: "Logged Out Succesfully" })
+  } catch (error) {
+    return res.status(400).json(error)
+  }
+})
 //check if cookie exists or not
 
-router.get('/check-cookie', async(req,res)=>{
+router.get('/check-cookie', async (req, res) => {
   try {
     const token = req.cookies.AniFlexToken;
     if (token) {
-      return res.status(200).json({message:true})
+      return res.status(200).json({ message: true })
     }
-    return res.status(200).json({message:false})
+    return res.status(200).json({ message: false })
   } catch (error) {
     return res.status(400).json(error)
   }
@@ -141,15 +142,15 @@ router.get('/users', async (req, res) => {
   }
 });
 //user details
-router.get('/user-details',IsAuth, async (req,res)=>{
+router.get('/user-details', IsAuth, async (req, res) => {
   try {
-    const {email} = req.user;
-    const existingUser = await User.findOne({email:email}).select("-password");
+    const { email } = req.user;
+    const existingUser = await User.findOne({ email: email }).select("-password");
     const role = req.user.role;
-    return res.status(200).json({user:existingUser});
+    return res.status(200).json({ user: existingUser });
 
   } catch (error) {
-    return res.status(500).json({error: error})
+    return res.status(500).json({ error: error })
   }
 })
 
