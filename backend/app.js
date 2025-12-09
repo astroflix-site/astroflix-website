@@ -12,9 +12,13 @@ app.use(cors({
     origin: [
         'https://cbpsc3gn-5173.inc1.devtunnels.ms',
         'http://localhost:5173',
-        'http://localhost:5174'
+        'http://localhost:5174',
+        'https://astroflix-website.vercel.app'
     ], // Frontend origins
     credentials: true, // Allow credentials (cookies) to be sent
+
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 //all routes
