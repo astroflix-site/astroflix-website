@@ -78,13 +78,18 @@ router.post("/login", async (req, res) => {
 
       // generating the jwt token
       const token = jwt.sign({ id: existingUser._id, email: existingUser.email }, process.env.TOKEN_SECRET, { expiresIn: "30d" })
-      res.cookie("AniFlexToken", token, {
+
+      // Cookie settings for cross-site compatibility
+      const cookieOptions = {
         httpOnly: true,
-        maxAge: 30 * 24 * 60 * 60 * 1000,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV === "production" ? 'None' : 'Lax',
+        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+        secure: process.env.NODE_ENV === "production", // Only HTTPS in production
+        sameSite: process.env.NODE_ENV === "production" ? 'none' : 'lax', // 'none' for cross-site in production
         path: "/"
-      })
+      };
+
+      res.cookie("AniFlexToken", token, cookieOptions);
+
       return res.status(200).json({
         id: existingUser._id,
         username: existingUser.username,
@@ -104,8 +109,12 @@ router.post("/login", async (req, res) => {
 // logout
 router.post('/logout', async (req, res) => {
   try {
+    // Clear cookie with same settings as when it was set
     res.clearCookie("AniFlexToken", {
       httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? 'none' : 'lax',
+      path: "/"
     });
     return res.status(200).json({ message: "Logged Out Succesfully" })
   } catch (error) {
