@@ -27,3 +27,6 @@ app.get('/',)
 app.listen(process.env.PORT, () => {
     console.log('Server Started On ' + process.env.PORT)
 })
+
+
+export default app;
