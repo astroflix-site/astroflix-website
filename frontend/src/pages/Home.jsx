@@ -27,7 +27,7 @@ export default function Home() {
           rating: s.rating,
           genre: s.genre ? s.genre.split(',').map(g => g.trim()) : [],
           year: s.releaseDate ? new Date(s.releaseDate).getFullYear() : "N/A",
-          year: s.releaseDate ? new Date(s.releaseDate).getFullYear() : "N/A",
+
           status: s.status,
           episodes: s.episodes || []
         }));
