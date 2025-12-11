@@ -5,7 +5,7 @@ const IsAdmin = (req, res, next) => {
 
     if (!token) {
         console.log('Authentication failed: No token provided.');
-        return res.status(401).json({ message: "Authentication000000000 token is missing" });
+        return res.status(401).json({ message: "Authentication token is missing" });
     }
 
     jwt.verify(token, process.env.TOKEN_SECRET, (err, user) => {

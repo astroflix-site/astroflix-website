@@ -12,12 +12,15 @@ router.post('/bookmark', IsAuth, async (req, res) => {
         const user = await User.findById(userId);
         if (!user) return res.status(404).json({ message: 'User not found' });
 
-        if (!user.bookmarks.includes(contentId)) {
-            user.bookmarks.push(contentId);
-            await user.save();
-            return res.status(200).json({ message: 'Bookmark added' });
+        // Check if bookmark already exists
+        const hasBookmark = await User.hasBookmark(userId, contentId);
+        if (hasBookmark) {
+            return res.status(400).json({ message: 'Already bookmarked' });
         }
-        return res.status(400).json({ message: 'Already bookmarked' });
+
+        // Add bookmark
+        await User.addBookmark(userId, contentId);
+        return res.status(200).json({ message: 'Bookmark added' });
     } catch (error) {
         console.error("Bookmark error:", error);
         res.status(500).json({ message: 'Internal server error', error: error.message });
@@ -33,8 +36,8 @@ router.post('/unbookmark', IsAuth, async (req, res) => {
         const user = await User.findById(userId);
         if (!user) return res.status(404).json({ message: 'User not found' });
 
-        user.bookmarks = user.bookmarks.filter((id) => id.toString() !== contentId);
-        await user.save();
+        // Remove bookmark
+        await User.removeBookmark(userId, contentId);
         return res.status(200).json({ message: 'Bookmark removed' });
     } catch (error) {
         console.error("Unbookmark error:", error);
@@ -46,9 +49,28 @@ router.post('/unbookmark', IsAuth, async (req, res) => {
 router.get('/bookmarks', IsAuth, async (req, res) => {
     const userId = req.user.id;
     try {
-        const user = await User.findById(userId).populate('bookmarks');
+        const user = await User.findById(userId);
         if (!user) return res.status(404).json({ message: 'User not found' });
-        return res.status(200).json({ bookmarks: user.bookmarks });
+
+        // Get bookmarks with series details
+        const bookmarks = await User.getBookmarks(userId);
+
+        // Format bookmarks to match MongoDB response structure
+        const formattedBookmarks = bookmarks.map(bookmark => ({
+            _id: bookmark.id,
+            imageURL: bookmark.image_url,
+            backdrop: bookmark.backdrop,
+            title: bookmark.title,
+            description: bookmark.description,
+            genre: bookmark.genre,
+            releaseDate: bookmark.release_date,
+            status: bookmark.status,
+            rating: bookmark.rating,
+            totalEpisodes: bookmark.total_episodes,
+            createdAt: bookmark.created_at
+        }));
+
+        return res.status(200).json({ bookmarks: formattedBookmarks });
     } catch (error) {
         console.error("Fetch bookmarks error:", error);
         res.status(500).json({ message: 'Internal server error', error: error.message });

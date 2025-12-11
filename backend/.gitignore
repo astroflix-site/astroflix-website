@@ -13,8 +13,8 @@ yarn-error.log*
 coverage/
 
 # Environment files
-.env
-.env.*.local
+#.env
+#.env.*.local
 
 # Miscellaneous
 .DS_Store

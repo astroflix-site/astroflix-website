@@ -17,8 +17,7 @@ router.post('/new-series', IsAuth, IsAdmin, async (req, res) => {
     }
 
     try {
-        const newSeries = new Series({ title, description, imageURL, backdrop, genre, releaseDate, status, rating, totalEpisodes });
-        await newSeries.save();
+        const newSeries = await Series.create({ title, description, imageURL, backdrop, genre, releaseDate, status, rating, totalEpisodes });
         res.json({ message: 'Series created successfully!', series: newSeries });
     } catch (error) {
         console.error('Error creating series:', error.message);
@@ -65,29 +64,18 @@ router.post("/upload", IsAuth, IsAdmin, upload.single("video"), async (req, res)
             console.error("Missing required fields in PlayerX response or request:", playerXResponse.data);
             return res.status(500).json({ error: "Incomplete video data." });
         }
-        // Save episode info to MongoDB
-        const newEpisode = new Episode({
+
+        // Save episode info to PostgreSQL
+        const newEpisode = await Episode.create({
             url: slug,  // Save the full video URL
             title: title, // Title from the form data
             episodeNumber: episodeNumber,
-            season: season || 1
+            season: season || 1,
+            series: seriesId || null
         });
 
-        if (seriesId) {
-            // Check if the series exists
-            const series = await Series.findById(seriesId);
-            if (!series) {
-                return res.status(404).json({ error: "Series not found." });
-            }
-
-            // Associate episode with series
-            series.episodes.push(newEpisode._id); // Add episode to series's list of episodes
-            newEpisode.series = series._id; // Link back from the episode to the series
-
-            await series.save(); // Save series with new episode
-        }
-
-        await newEpisode.save(); // Save the episode
+        // No need to update series separately as we'll count episodes on query
+        // But if you want to keep totalEpisodes synced, you can do it here
 
         res.json({ message: "Episode uploaded and saved!", episode: newEpisode });
     } catch (error) {
@@ -106,7 +94,7 @@ router.post('/new-episode', IsAuth, IsAdmin, async (req, res) => {
     }
 
     try {
-        const newEpisode = new Episode({
+        const newEpisode = await Episode.create({
             title,
             episodeNumber,
             url,
@@ -114,15 +102,6 @@ router.post('/new-episode', IsAuth, IsAdmin, async (req, res) => {
             season: season || 1
         });
 
-        if (seriesId) {
-            const series = await Series.findById(seriesId);
-            if (series) {
-                series.episodes.push(newEpisode._id);
-                await series.save();
-            }
-        }
-
-        await newEpisode.save();
         res.json({ message: 'Episode created successfully!', episode: newEpisode });
     } catch (error) {
         console.error('Error creating episode:', error.message);
@@ -136,7 +115,7 @@ router.get('/search-series', async (req, res) => {
 
     try {
         // Find series with title matching the search term (case-insensitive)
-        const seriesList = await Series.find({ title: { $regex: title, $options: 'i' } });
+        const seriesList = await Series.search(title);
 
         if (seriesList.length === 0) {
             return res.status(404).json({ error: 'No series found.' });
@@ -155,7 +134,7 @@ router.get('/episodes/:episode_title', async (req, res) => {
     const { episode_title } = req.params;
 
     try {
-        const episode = await Episode.findOne({ title: episode_title });
+        const episode = await Episode.findByTitle(episode_title);
         if (!episode) {
             return res.status(404).json({ error: 'Episode not found.' });
         }
@@ -200,14 +179,13 @@ router.post('/series/:seriesId/add-episode', IsAuth, IsAdmin, async (req, res) =
             return res.status(404).json({ error: 'Episode not found.' });
         }
 
-        // Associate the episode with the series
-        series.episodes.push(episode._id);
-        episode.series = series._id;
+        // Update episode to link to series
+        await Episode.update(episodeId, { series: seriesId });
 
-        await series.save();
-        await episode.save();
+        // Fetch updated series with episodes
+        const updatedSeries = await Series.getWithEpisodes(seriesId);
 
-        res.json({ message: 'Episode added to series!', series });
+        res.json({ message: 'Episode added to series!', series: updatedSeries });
     } catch (error) {
         console.error('Error adding episode to series:', error.message);
         res.status(500).json({ error: 'Failed to add episode to series.' });
@@ -219,7 +197,7 @@ router.get('/series/:seriesId', async (req, res) => {
     const { seriesId } = req.params;
 
     try {
-        const series = await Series.findById(seriesId).populate('episodes');
+        const series = await Series.getWithEpisodes(seriesId);
         if (!series) {
             return res.status(404).json({ error: 'Series not found.' });
         }
@@ -238,7 +216,7 @@ router.put('/series/:id', IsAuth, IsAdmin, async (req, res) => {
     const updates = req.body;
 
     try {
-        const series = await Series.findByIdAndUpdate(id, updates, { new: true });
+        const series = await Series.update(id, updates);
         if (!series) {
             return res.status(404).json({ error: 'Series not found.' });
         }
@@ -254,12 +232,11 @@ router.delete('/series/:id', IsAuth, IsAdmin, async (req, res) => {
     const { id } = req.params;
 
     try {
-        const series = await Series.findByIdAndDelete(id);
-        if (!series) {
+        const deleted = await Series.delete(id);
+        if (!deleted) {
             return res.status(404).json({ error: 'Series not found.' });
         }
-        // Optional: Delete associated episodes if needed, but for now just the series doc
-        // await Episode.deleteMany({ series: id }); 
+        // Episodes will be automatically deleted due to CASCADE constraint
 
         res.json({ message: 'Series deleted successfully!' });
     } catch (error) {
@@ -274,7 +251,7 @@ router.put('/episode/:id', IsAuth, IsAdmin, async (req, res) => {
     const updates = req.body;
 
     try {
-        const episode = await Episode.findByIdAndUpdate(id, updates, { new: true });
+        const episode = await Episode.update(id, updates);
         if (!episode) {
             return res.status(404).json({ error: 'Episode not found.' });
         }
@@ -290,14 +267,9 @@ router.delete('/episode/:id', IsAuth, IsAdmin, async (req, res) => {
     const { id } = req.params;
 
     try {
-        const episode = await Episode.findByIdAndDelete(id);
+        const episode = await Episode.delete(id);
         if (!episode) {
             return res.status(404).json({ error: 'Episode not found.' });
-        }
-
-        // Remove from series if associated
-        if (episode.series) {
-            await Series.findByIdAndUpdate(episode.series, { $pull: { episodes: id } });
         }
 
         res.json({ message: 'Episode deleted successfully!' });

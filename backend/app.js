@@ -1,7 +1,7 @@
 const express = require('express')
 const app = express()
 require("dotenv").config()
-const connectDB = require('./db')
+const pool = require('./db') // Import PostgreSQL pool
 const userApi = require('./api/user')
 const cookieParser = require('cookie-parser')
 app.use(express.json());
@@ -10,7 +10,8 @@ const cors = require('cors');
 const contentApi = require('./api/content')
 app.use(cors({
     origin: [
-        'https://astroflix-website.vercel.app'
+        'https://astroflix-website.vercel.app',
+        'http://localhost:5173'
     ], // Frontend origins
     credentials: true, // Allow credentials (cookies) to be sent
 
@@ -30,4 +31,4 @@ app.listen(process.env.PORT, () => {
 })
 
 
-export default app;
+module.exports = app;

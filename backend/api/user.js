@@ -34,8 +34,8 @@ router.post("/register", async (req, res) => {
     }
 
     try {
-      const existingEmail = await User.findOne({ email: email });
-      const existingUsername = await User.findOne({ username: username });
+      const existingEmail = await User.findByEmail(email);
+      const existingUsername = await User.findByUsername(username);
       if (existingEmail || existingUsername) {
         return res.status(400).json({ message: "Username or Email Already Exists" });
       }
@@ -46,8 +46,7 @@ router.post("/register", async (req, res) => {
     try {
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(password, salt);
-      const NewUser = new User({ username, email, password: hashedPassword });
-      await NewUser.save();
+      const newUser = await User.create({ username, email, password: hashedPassword });
       return res.status(201).json({ message: "User Created Successfully" });
     } catch (error) {
       console.error(error);
@@ -66,7 +65,7 @@ router.post("/login", async (req, res) => {
       return res.status(400).json({ message: 'All fields are required' });
     }
     try {
-      const existingUser = await User.findOne({ email: email });
+      const existingUser = await User.findByEmail(email);
       if (!existingUser) {
         return res.status(400).json({ message: "Invalid Credentials" });
       }
@@ -77,7 +76,7 @@ router.post("/login", async (req, res) => {
       }
 
       // generating the jwt token
-      const token = jwt.sign({ id: existingUser._id, email: existingUser.email }, process.env.TOKEN_SECRET, { expiresIn: "30d" })
+      const token = jwt.sign({ id: existingUser.id, email: existingUser.email }, process.env.TOKEN_SECRET, { expiresIn: "30d" })
 
       // Cookie settings for cross-site compatibility
       const cookieOptions = {
@@ -91,7 +90,8 @@ router.post("/login", async (req, res) => {
       res.cookie("AniFlexToken", token, cookieOptions);
 
       return res.status(200).json({
-        id: existingUser._id,
+        _id: existingUser.id, // Use _id for frontend compatibility
+        id: existingUser.id,
         username: existingUser.username,
         email: email,
         role: existingUser.role,
@@ -139,11 +139,21 @@ router.get('/check-cookie', async (req, res) => {
 router.get('/users', async (req, res) => {
   try {
     // Fetch all users from the database
-    const users = await User.find();
+    const users = await User.findAll();
+
+    // Format users to include _id for frontend compatibility
+    const formattedUsers = users.map(user => ({
+      _id: user.id,
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      role: user.role,
+      createdAt: user.created_at
+    }));
 
     res.status(200).json({
       message: 'Users retrieved successfully',
-      users,
+      users: formattedUsers,
     });
   } catch (error) {
     console.error('Error fetching users:', error.message);
@@ -154,9 +164,23 @@ router.get('/users', async (req, res) => {
 router.get('/user-details', IsAuth, async (req, res) => {
   try {
     const { email } = req.user;
-    const existingUser = await User.findOne({ email: email }).select("-password");
-    const role = req.user.role;
-    return res.status(200).json({ user: existingUser });
+    const existingUser = await User.findByEmail(email);
+
+    if (!existingUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Format user object without password
+    const userResponse = {
+      _id: existingUser.id,
+      id: existingUser.id,
+      username: existingUser.username,
+      email: existingUser.email,
+      role: existingUser.role,
+      createdAt: existingUser.created_at
+    };
+
+    return res.status(200).json({ user: userResponse });
 
   } catch (error) {
     return res.status(500).json({ error: error })
@@ -176,7 +200,11 @@ router.delete('/delete-user/:id', IsAuth, IsAdmin, async (req, res) => {
     }
 
     // Delete user
-    await User.findByIdAndDelete(id);
+    const deleted = await User.delete(id);
+
+    if (!deleted) {
+      return res.status(500).json({ error: 'Failed to delete user' });
+    }
 
     return res.status(200).json({ message: 'User deleted successfully' });
   } catch (error) {
