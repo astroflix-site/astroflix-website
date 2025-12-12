@@ -82,9 +82,21 @@ const Series = {
      * @returns {Array} Array of all series
      */
     async findAll() {
-        const query = 'SELECT * FROM series ORDER BY created_at DESC';
+        const query = `
+            SELECT s.*, 
+                   COUNT(e.id) as episode_count
+            FROM series s
+            LEFT JOIN episodes e ON s.id = e.series_id
+            GROUP BY s.id
+            ORDER BY s.created_at DESC
+        `;
         const result = await pool.query(query);
-        return result.rows.map(series => this._formatSeries(series));
+        return result.rows.map(series => {
+            const formatted = this._formatSeries(series);
+            // Add episode count (not full episodes array, just count)
+            formatted.episodes = Array(parseInt(series.episode_count) || 0).fill(null);
+            return formatted;
+        });
     },
 
     /**

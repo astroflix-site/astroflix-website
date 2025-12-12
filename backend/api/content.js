@@ -87,10 +87,15 @@ router.post("/upload", IsAuth, IsAdmin, upload.single("video"), async (req, res)
 
 // api to create episode directly (e.g. from URL)
 router.post('/new-episode', IsAuth, IsAdmin, async (req, res) => {
-    const { title, episodeNumber, url, seriesId, season } = req.body;
+    const { title, episodeNumber, url, servers, seriesId, season } = req.body;
 
-    if (!title || !episodeNumber || !url) {
-        return res.status(400).json({ error: 'Title, Episode Number, and URL are required.' });
+    // Validate required fields - accept either url or servers
+    if (!title || !episodeNumber) {
+        return res.status(400).json({ error: 'Title and Episode Number are required.' });
+    }
+
+    if (!url && (!servers || servers.length === 0)) {
+        return res.status(400).json({ error: 'At least one server URL is required.' });
     }
 
     try {
@@ -98,6 +103,7 @@ router.post('/new-episode', IsAuth, IsAdmin, async (req, res) => {
             title,
             episodeNumber,
             url,
+            servers,
             series: seriesId || null,
             season: season || 1
         });
@@ -106,6 +112,17 @@ router.post('/new-episode', IsAuth, IsAdmin, async (req, res) => {
     } catch (error) {
         console.error('Error creating episode:', error.message);
         res.status(500).json({ error: 'Failed to create episode.' });
+    }
+});
+
+// Get all series
+router.get('/all-series', async (req, res) => {
+    try {
+        const seriesList = await Series.findAll();
+        res.json({ series: seriesList });
+    } catch (error) {
+        console.error('Error fetching all series:', error.message);
+        res.status(500).json({ error: 'Failed to fetch series.' });
     }
 });
 
