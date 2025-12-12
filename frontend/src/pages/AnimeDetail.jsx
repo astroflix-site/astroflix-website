@@ -4,10 +4,14 @@ import { useRoute, Link } from "wouter";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getSeriesById, addBookmark, removeBookmark, getBookmarks } from "@/lib/api";
-import { Play, Plus, Check } from "lucide-react";
+import { Play, Plus, Check, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+
+const EPISODES_PER_PAGE = 20;
 
 export default function AnimeDetail() {
   const [match, params] = useRoute("/anime/:id");
@@ -17,6 +21,11 @@ export default function AnimeDetail() {
   const [error, setError] = useState(null);
   const { user } = useAuth();
   const { toast } = useToast();
+
+  // Episode filtering and pagination
+  const [selectedSeason, setSelectedSeason] = useState("1");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     if (params?.id) {
@@ -39,6 +48,7 @@ export default function AnimeDetail() {
               episodes: data.episodes ? data.episodes.map(ep => ({
                 id: ep._id,
                 number: ep.episodeNumber,
+                season: ep.season || 1,
                 title: ep.title,
                 duration: "24:00",
                 url: ep.url
@@ -83,6 +93,30 @@ export default function AnimeDetail() {
       toast({ title: "Error", description: "Failed to update list.", variant: "destructive" });
     }
   };
+
+  // Get unique seasons
+  const seasons = anime ? [...new Set(anime.episodes.map(ep => ep.season))].sort((a, b) => a - b) : [];
+
+  // Filter episodes by season and search query
+  const filteredEpisodes = anime ? anime.episodes.filter(ep => {
+    const matchesSeason = ep.season === parseInt(selectedSeason);
+    const matchesSearch = searchQuery === "" ||
+      ep.number.toString().includes(searchQuery) ||
+      ep.title.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesSeason && matchesSearch;
+  }) : [];
+
+  // Pagination
+  const totalPages = Math.ceil(filteredEpisodes.length / EPISODES_PER_PAGE);
+  const paginatedEpisodes = filteredEpisodes.slice(
+    (currentPage - 1) * EPISODES_PER_PAGE,
+    currentPage * EPISODES_PER_PAGE
+  );
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedSeason, searchQuery]);
 
   if (loading) return <div className="min-h-screen bg-black flex items-center justify-center text-white">Loading...</div>;
   if (error) return <div className="min-h-screen bg-black flex items-center justify-center text-red-500">{error}</div>;
@@ -150,11 +184,49 @@ export default function AnimeDetail() {
               </div>
             </div>
 
-            {/* Episode List */}
+            {/* Episode List with Filters */}
             <div className="mt-12">
               <h3 className="text-2xl font-display font-bold text-white mb-6">Episodes</h3>
+
+              {/* Filters */}
+              <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                {/* Season Selector */}
+                <div className="flex-none w-full sm:w-48">
+                  <Select value={selectedSeason} onValueChange={setSelectedSeason}>
+                    <SelectTrigger className="bg-black/20 border-white/10 text-white">
+                      <SelectValue placeholder="Select Season" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-card border-white/10 text-white">
+                      {seasons.map(season => (
+                        <SelectItem key={season} value={season.toString()}>
+                          Season {season}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Search Input */}
+                <div className="flex-1 relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    type="text"
+                    placeholder="Search by episode number or title..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 bg-black/20 border-white/10 text-white placeholder:text-muted-foreground"
+                  />
+                </div>
+              </div>
+
+              {/* Results Info */}
+              <div className="text-sm text-muted-foreground mb-4">
+                Showing {paginatedEpisodes.length} of {filteredEpisodes.length} episodes
+              </div>
+
+              {/* Episode Grid */}
               <div className="grid gap-2">
-                {anime.episodes.map((ep) => (
+                {paginatedEpisodes.map((ep) => (
                   <Link href={`/watch/${ep.id}`} key={ep.id}>
                     <div className="group flex items-center gap-4 p-4 rounded-md hover:bg-white/10 transition-colors cursor-pointer border-b border-white/5 last:border-0">
                       <div className="w-8 text-center text-muted-foreground font-mono">{ep.number}</div>
@@ -166,10 +238,55 @@ export default function AnimeDetail() {
                     </div>
                   </Link>
                 ))}
-                {anime.episodes.length === 0 && (
-                  <div className="text-muted-foreground">No episodes available yet.</div>
+                {paginatedEpisodes.length === 0 && (
+                  <div className="text-center text-muted-foreground py-8">
+                    {searchQuery ? "No episodes found matching your search." : "No episodes available for this season."}
+                  </div>
                 )}
               </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-2 mt-6">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="border-white/20 text-white hover:bg-white/10 disabled:opacity-50"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </Button>
+
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                      <Button
+                        key={page}
+                        variant={currentPage === page ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setCurrentPage(page)}
+                        className={
+                          currentPage === page
+                            ? "bg-white text-black hover:bg-white/90"
+                            : "border-white/20 text-white hover:bg-white/10"
+                        }
+                      >
+                        {page}
+                      </Button>
+                    ))}
+                  </div>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                    className="border-white/20 text-white hover:bg-white/10 disabled:opacity-50"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </div>
