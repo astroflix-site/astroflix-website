@@ -90,13 +90,10 @@ export const createEpisode = async (data) => {
 
 export const getAllSeries = async () => {
     try {
-        // Using search-series with empty query to get all, or we might need a dedicated endpoint.
-        // For now, let's assume search-series returns all if query is empty or we can add a specific endpoint.
-        // Actually, let's check content.js. It uses regex. Empty string matches everything.
-        const response = await api.get('/search-series?title=');
+        const response = await api.get('/all-series');
         return response.data.series;
     } catch (error) {
-        // If 404 (no series found), return empty array
+        // If error, return empty array
         if (error.response?.status === 404) return [];
         throw error.response?.data?.message || "Failed to fetch series";
     }

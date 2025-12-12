@@ -101,7 +101,11 @@ export default function UploadVideo() {
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="space-y-2">
                         <Label className="text-white">Select Series</Label>
-                        <Select onValueChange={handleSeriesChange} value={formData.seriesId}>
+                        <Select
+                            onValueChange={handleSeriesChange}
+                            value={formData.seriesId}
+                            key={seriesList.length} // Force re-render when series list loads
+                        >
                             <SelectTrigger className="bg-black/20 border-white/10 text-white">
                                 <SelectValue placeholder="Select a series" />
                             </SelectTrigger>
