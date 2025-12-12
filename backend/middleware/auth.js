@@ -15,6 +15,17 @@ const IsAuth = async (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, secretKey);
+
+    // Check if this is an old MongoDB token (non-numeric ID)
+    if (decoded.id && isNaN(decoded.id)) {
+      // Old MongoDB ObjectId format - force re-login
+      console.log('Old MongoDB token detected, requiring re-login');
+      return res.status(401).json({
+        message: "Session expired. Please log in again.",
+        requiresRelogin: true
+      });
+    }
+
     const user = await User.findById(decoded.id);
 
     if (!user) {
