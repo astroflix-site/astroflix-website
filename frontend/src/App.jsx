@@ -14,11 +14,13 @@ import AdminPanel from "@/pages/AdminPanel";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import SearchResults from "@/pages/SearchResults";
+import Explore from "@/pages/Explore";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/explore" component={Explore} />
       <Route path="/anime/:id" component={AnimeDetail} />
       <Route path="/watch/:episodeId" component={Player} />
       <Route path="/dashboard" component={Dashboard} />

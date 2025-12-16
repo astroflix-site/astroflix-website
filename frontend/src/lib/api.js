@@ -1,9 +1,9 @@
 import axios from "axios";
 
-const API_URL = "https://astro-flix.netlify.app/api";
+// const API_URL = "http://localhost:5000/api";
 
 const api = axios.create({
-    baseURL: API_URL,
+    baseURL: import.meta.env.VITE_API_URL,
     withCredentials: true,
 });
 
@@ -91,11 +91,15 @@ export const createEpisode = async (data) => {
 export const getAllSeries = async () => {
     try {
         const response = await api.get('/all-series');
-        return response.data.series;
+        if (response.data && Array.isArray(response.data.series)) {
+            return response.data.series;
+        }
+        return [];
     } catch (error) {
         // If error, return empty array
         if (error.response?.status === 404) return [];
-        throw error.response?.data?.message || "Failed to fetch series";
+        console.error("getAllSeries error:", error);
+        return [];
     }
 };
 

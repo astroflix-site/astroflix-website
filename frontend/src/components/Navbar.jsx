@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Search, User, LogOut, LayoutDashboard } from "lucide-react";
+import { Search, User, LogOut, LayoutDashboard, Menu, X } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -12,36 +12,66 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 export function Navbar() {
   const { user, logout } = useAuth();
   const [search, setSearch] = useState("");
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
   const [_, setLocation] = useLocation();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleSearch = (e) => {
     e.preventDefault();
     if (search.trim()) {
       setLocation(`/search/${encodeURIComponent(search.trim())}`);
+      setShowMobileSearch(false);
     }
   };
 
+  const NavLinks = ({ mobile = false, onClick = () => { } }) => (
+    <>
+      <Link href="/" className={`hover:text-white transition-colors ${mobile ? 'text-lg py-2' : ''}`} onClick={onClick}>Home</Link>
+      <Link href="/explore" className={`hover:text-white transition-colors ${mobile ? 'text-lg py-2' : ''}`} onClick={onClick}>Explore</Link>
+      <Link href="/dashboard" className={`hover:text-white transition-colors ${mobile ? 'text-lg py-2' : ''}`} onClick={onClick}>My List</Link>
+      {user?.isAdmin && (
+        <Link href="/admin" className={`hover:text-white transition-colors ${mobile ? 'text-lg py-2' : ''}`} onClick={onClick}>Admin</Link>
+      )}
+    </>
+  );
+
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-white/5 h-16 flex items-center px-6 lg:px-12">
-      <div className="flex items-center gap-8 flex-1">
-        <Link href="/" className="text-2xl font-display font-bold tracking-tighter text-white hover:text-white/90 transition-colors">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-white/5 h-16 flex items-center px-4 lg:px-12">
+      <div className="flex items-center gap-4 lg:gap-8 flex-1">
+        {/* Mobile Menu Trigger */}
+        <div className="md:hidden">
+          <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="text-white">
+                <Menu className="h-6 w-6" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="bg-background border-white/10 text-white w-64">
+              <div className="flex flex-col gap-4 mt-8">
+                <NavLinks mobile onClick={() => setIsMobileMenuOpen(false)} />
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
+
+        <Link href="/" className="text-xl lg:text-2xl font-display font-bold tracking-tighter text-white hover:text-white/90 transition-colors">
           ASTROFLIX
         </Link>
+
+        {/* Desktop Nav */}
         <div className="hidden md:flex gap-6 text-sm font-medium text-muted-foreground">
-          <Link href="/" className="hover:text-white transition-colors">Home</Link>
-          <Link href="/dashboard" className="hover:text-white transition-colors">My List</Link>
-          {user?.isAdmin && (
-            <Link href="/admin" className="hover:text-white transition-colors">Admin</Link>
-          )}
+          <NavLinks />
         </div>
       </div>
 
-      <div className="flex items-center gap-4">
-        <form onSubmit={handleSearch} className="relative hidden sm:block">
+      <div className="flex items-center gap-2 lg:gap-4">
+        {/* Desktop Search */}
+        <form onSubmit={handleSearch} className="relative hidden md:block">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
             type="search"
@@ -52,10 +82,20 @@ export function Navbar() {
           />
         </form>
 
+        {/* Mobile Search Toggle */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="md:hidden text-muted-foreground hover:text-white"
+          onClick={() => setShowMobileSearch(!showMobileSearch)}
+        >
+          <Search className="h-5 w-5" />
+        </Button>
+
         {user ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="rounded-full w-9 h-9 border border-white/10 hover:bg-white/10">
+              <Button variant="ghost" size="icon" className="rounded-full w-8 h-8 lg:w-9 lg:h-9 border border-white/10 hover:bg-white/10">
                 <img
                   src={user.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"}
                   alt={user.username}
@@ -89,11 +129,28 @@ export function Navbar() {
               <Button variant="ghost" size="sm" className="text-white hover:text-white hover:bg-white/10">Sign In</Button>
             </Link>
             <Link href="/register">
-              <Button size="sm" className="bg-white text-black hover:bg-white/90">Sign Up</Button>
+              <Button size="sm" className="bg-white text-black hover:bg-white/90 hidden sm:flex">Sign Up</Button>
             </Link>
           </div>
         )}
       </div>
+
+      {/* Mobile Search Bar Overlay */}
+      {showMobileSearch && (
+        <div className="absolute top-16 left-0 right-0 bg-background border-b border-white/10 p-4 md:hidden animate-in slide-in-from-top-2">
+          <form onSubmit={handleSearch} className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Search..."
+              className="pl-9 bg-secondary border-none w-full"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              autoFocus
+            />
+          </form>
+        </div>
+      )}
     </nav>
   );
 }

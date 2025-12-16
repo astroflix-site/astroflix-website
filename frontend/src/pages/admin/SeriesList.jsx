@@ -34,7 +34,7 @@ export default function SeriesList() {
     const query = searchQuery.toLowerCase();
     const filtered = series.filter(s =>
       s.title.toLowerCase().includes(query) ||
-      s._id.toLowerCase().includes(query)
+      String(s._id).includes(query)
     );
     setFilteredSeries(filtered);
   }, [searchQuery, series]);

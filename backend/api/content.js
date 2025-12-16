@@ -21,7 +21,7 @@ router.post('/new-series', IsAuth, IsAdmin, async (req, res) => {
         res.json({ message: 'Series created successfully!', series: newSeries });
     } catch (error) {
         console.error('Error creating series:', error.message);
-        res.status(500).json({ error: 'Failed to create series.' });
+        res.status(500).json({ error: `Failed to create series.${error.message}` });
     }
 });
 

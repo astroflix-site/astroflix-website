@@ -32,10 +32,23 @@ export default function Home() {
           episodes: s.episodes || []
         }));
 
-        setTrending(mappedData);
-        setLatest([...mappedData].reverse()); // Simple reverse for latest for now
+        // Sort for Popular (by rating)
+        const popularData = [...mappedData].sort((a, b) => (b.rating || 0) - (a.rating || 0));
+        setTrending(popularData);
+
+        // Sort for Latest (by release date)
+        const latestData = [...mappedData].sort((a, b) => new Date(b.releaseDate || 0) - new Date(a.releaseDate || 0));
+        setLatest(latestData);
+
         if (mappedData.length > 0) {
-          setFeatured(mappedData[0]);
+          // Set initial featured from list
+          const initialFeatured = mappedData[0];
+          setFeatured(initialFeatured);
+
+          // Fetch full details for featured to get real episode IDs for Play button
+          // We import getSeriesById dynamically or assume it's available if we add it to imports
+          // But better to just use the one from api lib if available. 
+          // It is not imported yet. I need to add it to imports.
         }
       } catch (error) {
         console.error("Failed to fetch series:", error);
@@ -43,6 +56,23 @@ export default function Home() {
     };
     fetchData();
   }, []);
+
+  // Effect to fetch featured details
+  useEffect(() => {
+    if (featured && !featured.realEpisodesFetched) {
+      import("@/lib/api").then(({ getSeriesById }) => {
+        getSeriesById(featured.id).then(data => {
+          if (data && data.episodes && data.episodes.length > 0) {
+            setFeatured(prev => ({
+              ...prev,
+              episodes: data.episodes.map(e => e._id), // Store IDs
+              realEpisodesFetched: true
+            }));
+          }
+        });
+      });
+    }
+  }, [featured]);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -78,10 +108,10 @@ export default function Home() {
             </p>
 
             <div className="flex items-center gap-4 mt-4">
-              <Link href={featured.episodes && featured.episodes.length > 0 ? `/watch/${featured.episodes[0]}` : "#"}>
+              <Link href={featured.episodes && featured.episodes.length > 0 && featured.episodes[0] ? `/watch/${featured.episodes[0]}` : `/anime/${featured.id}`}>
                 <Button size="lg" className="bg-white text-black hover:bg-white/90 font-bold px-8 h-12 text-base rounded-md">
                   <Play className="w-5 h-5 mr-2 fill-black" />
-                  Play Now
+                  {featured.episodes && featured.episodes.length > 0 && featured.episodes[0] ? "Play Now" : "View Details"}
                 </Button>
               </Link>
               <Link href={`/anime/${featured.id}`}>
@@ -98,9 +128,9 @@ export default function Home() {
       {/* Content Rows */}
       <div className="relative z-20 -mt-16 pb-20 space-y-12 px-6 lg:px-12">
         <section>
-          <h2 className="text-xl md:text-2xl font-display font-semibold text-white mb-6">Trending Now</h2>
+          <h2 className="text-xl md:text-2xl font-display font-semibold text-white mb-6">Popular</h2>
           <div className="flex gap-4 overflow-x-auto pb-8 scrollbar-hide -mx-6 px-6 lg:-mx-12 lg:px-12">
-            {trending.map((anime) => (
+            {trending.slice(0, 10).map((anime) => (
               <AnimeCard key={anime.id} anime={anime} />
             ))}
           </div>
@@ -109,7 +139,7 @@ export default function Home() {
         <section>
           <h2 className="text-xl md:text-2xl font-display font-semibold text-white mb-6">Latest Uploads</h2>
           <div className="flex gap-4 overflow-x-auto pb-8 scrollbar-hide -mx-6 px-6 lg:-mx-12 lg:px-12">
-            {latest.map((anime) => (
+            {latest.slice(0, 10).map((anime) => (
               <AnimeCard key={anime.id} anime={anime} />
             ))}
           </div>
