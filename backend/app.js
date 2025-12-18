@@ -8,26 +8,29 @@
 8: app.use(cookieParser());
 9: const cors = require('cors');
 10: const contentApi = require('./api/content')
-11: app.use(cors({
-12:   origin: (origin, callback) => {
-13:     // Allow requests with no origin (React Native, Postman, mobile apps)
-14:     if (!origin) return callback(null, true);
-15: 
-16:     const allowedOrigins = [
-17:       'https://astroflix-website.vercel.app',
-18:       'http://localhost:5173'
-19:     ];
-20: 
-21:     if (allowedOrigins.includes(origin)) {
-22:       return callback(null, true);
-23:     }
-24: 
-25:     return callback(new Error('Not allowed by CORS'));
-26:   },
-27:   credentials: true,
-28:   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-29:   allowedHeaders: ['Content-Type', 'Authorization']
-30: }));
+
+const allowedOrigins = [
+  'https://astroflix-website.vercel.app',
+  'http://localhost:5173'
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // React Native
+    if (!origin) {
+      return callback(null, false); // don't set ACAO at all
+    }
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, origin); // echo origin
+    }
+
+    return callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 31: 
 32: //all routes
 33: app.use('/api', userApi)
