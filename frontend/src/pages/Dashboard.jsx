@@ -7,11 +7,16 @@ import { getBookmarks } from "@/lib/api";
 import { User, Settings, CreditCard } from "lucide-react";
 
 export default function Dashboard() {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, updateProfile } = useAuth();
   const [bookmarks, setBookmarks] = useState([]);
+  const [isEditing, setIsEditing] = useState(false);
+  const [newUsername, setNewUsername] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   useEffect(() => {
     if (user) {
+      setNewUsername(user.username);
       getBookmarks()
         .then((data) => {
           const mappedBookmarks = data.map(s => ({
@@ -26,6 +31,18 @@ export default function Dashboard() {
         .catch(console.error);
     }
   }, [user]);
+
+  const handleUpdateProfile = async () => {
+    setError("");
+    setSuccess("");
+    try {
+      await updateProfile({ username: newUsername });
+      setSuccess("Profile updated successfully");
+      setIsEditing(false);
+    } catch (err) {
+      setError(err.toString());
+    }
+  };
 
   if (isLoading) return null;
 
@@ -46,10 +63,53 @@ export default function Dashboard() {
             <div className="w-16 h-16 rounded-full overflow-hidden border border-white/10">
               <img src={user.avatar} alt="Avatar" className="w-full h-full object-cover" />
             </div>
-            <div>
-              <h3 className="text-white font-bold text-lg">{user.username}</h3>
-              <p className="text-sm text-muted-foreground">{user.email}</p>
-              {user.isAdmin && <span className="text-xs bg-red-500/10 text-red-400 px-2 py-0.5 rounded mt-1 inline-block">Admin</span>}
+            <div className="flex-1">
+              {isEditing ? (
+                <div className="space-y-2">
+                  <input
+                    type="text"
+                    value={newUsername}
+                    onChange={(e) => setNewUsername(e.target.value)}
+                    className="bg-background border border-white/10 rounded px-2 py-1 text-white text-sm w-full"
+                    placeholder="New username"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleUpdateProfile}
+                      className="bg-primary text-primary-foreground px-2 py-1 rounded text-xs hover:bg-primary/90"
+                    >
+                      Save
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsEditing(false);
+                        setNewUsername(user.username);
+                        setError("");
+                      }}
+                      className="bg-secondary text-secondary-foreground px-2 py-1 rounded text-xs hover:bg-secondary/80"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                  {error && <p className="text-red-400 text-xs">{error}</p>}
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-white font-bold text-lg">{user.username}</h3>
+                    <button
+                      onClick={() => setIsEditing(true)}
+                      className="text-muted-foreground hover:text-white"
+                      title="Edit Profile"
+                    >
+                      <Settings className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <p className="text-sm text-muted-foreground">{user.email}</p>
+                  {user.isAdmin && <span className="text-xs bg-red-500/10 text-red-400 px-2 py-0.5 rounded mt-1 inline-block">Admin</span>}
+                  {success && <p className="text-green-400 text-xs mt-1">{success}</p>}
+                </>
+              )}
             </div>
           </div>
 

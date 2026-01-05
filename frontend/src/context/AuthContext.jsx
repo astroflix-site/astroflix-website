@@ -72,8 +72,22 @@ export function AuthProvider({ children }) {
     setLocation("/login");
   };
 
+  const updateProfile = async (data) => {
+    setIsLoading(true);
+    try {
+      const response = await api.updateUser(data);
+      // Update local user state with new data
+      setUser(prev => ({ ...prev, ...response.user }));
+      return response;
+    } catch (error) {
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, isLoading, login, register, logout, updateProfile }}>
       {children}
     </AuthContext.Provider>
   );

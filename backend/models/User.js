@@ -132,6 +132,24 @@ const User = {
         `;
         const result = await pool.query(query, [userId]);
         return result.rows;
+    },
+
+    /**
+     * Update user details
+     * @param {number} id - User ID
+     * @param {Object} updates - Fields to update {username}
+     * @returns {Object|null} Updated user object or null
+     */
+    async update(id, updates) {
+        const { username } = updates;
+        const query = `
+            UPDATE users 
+            SET username = COALESCE($1, username)
+            WHERE id = $2
+            RETURNING id, username, email, role, created_at
+        `;
+        const result = await pool.query(query, [username, id]);
+        return result.rows[0] || null;
     }
 };
 

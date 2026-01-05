@@ -187,6 +187,44 @@ router.get('/user-details', IsAuth, async (req, res) => {
   }
 })
 
+//update user details
+router.put('/update-user', IsAuth, async (req, res) => {
+  try {
+    const { id } = req.user; // Get user ID from the token (via IsAuth middleware)
+    const { username } = req.body;
+
+    if (!username) {
+      return res.status(400).json({ message: 'Username is required' });
+    }
+
+    if (username.length < 6) {
+      return res.status(400).json({ message: 'Username must be at least 6 characters' });
+    }
+
+    // Check if username is already taken by another user
+    const existingUser = await User.findByUsername(username);
+    if (existingUser && existingUser.id !== id) {
+      return res.status(400).json({ message: 'Username is already taken' });
+    }
+
+    // Update user
+    const updatedUser = await User.update(id, { username });
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    return res.status(200).json({
+      message: 'User updated successfully',
+      user: updatedUser
+    });
+
+  } catch (error) {
+    console.error('Error updating user:', error);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
 //user delete
 
 router.delete('/delete-user/:id', IsAuth, IsAdmin, async (req, res) => {

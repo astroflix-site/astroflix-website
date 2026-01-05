@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "https://astro-flix.netlify.app/api";
+const API_URL = "http://localhost:5000/api";
 
 const api = axios.create({
     baseURL: API_URL,
@@ -67,6 +67,15 @@ export const deleteUser = async (id) => {
         return response.data;
     } catch (error) {
         throw error.response?.data?.message || "Failed to delete user";
+    }
+};
+
+export const updateUser = async (data) => {
+    try {
+        const response = await api.put("/update-user", data);
+        return response.data;
+    } catch (error) {
+        throw error.response?.data?.message || "Failed to update user";
     }
 };
 
