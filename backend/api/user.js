@@ -95,6 +95,7 @@ router.post("/login", async (req, res) => {
         username: existingUser.username,
         email: email,
         role: existingUser.role,
+        token: token,
         message: "Logged In Succesfully"
       });
 
