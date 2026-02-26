@@ -4,72 +4,118 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { AnimeCard } from "@/components/AnimeCard";
 import { Button } from "@/components/ui/button";
-import { getAllSeries } from "@/lib/api";
+import { getAllSeries, getSeriesById } from "@/lib/api";
 import { Play, Info } from "lucide-react";
+
+function HeroSkeleton() {
+  return (
+    <div className="relative w-full h-[85vh] lg:h-[95vh] overflow-hidden">
+      <div className="absolute inset-0 bg-secondary animate-pulse" />
+      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/40 to-transparent" />
+      <div className="absolute bottom-0 left-0 w-full p-6 lg:p-16 pb-24 z-10 flex flex-col items-start gap-5 max-w-3xl">
+        <div className="h-14 md:h-20 w-80 bg-white/5 rounded-lg animate-pulse" />
+        <div className="flex items-center gap-3">
+          <div className="h-5 w-20 bg-white/5 rounded animate-pulse" />
+          <div className="h-5 w-12 bg-white/5 rounded animate-pulse" />
+          <div className="h-5 w-10 bg-white/5 rounded animate-pulse" />
+          <div className="h-5 w-32 bg-white/5 rounded animate-pulse" />
+        </div>
+        <div className="space-y-2 w-full max-w-xl">
+          <div className="h-4 w-full bg-white/5 rounded animate-pulse" />
+          <div className="h-4 w-4/5 bg-white/5 rounded animate-pulse" />
+          <div className="h-4 w-3/5 bg-white/5 rounded animate-pulse" />
+        </div>
+        <div className="flex items-center gap-4 mt-2">
+          <div className="h-12 w-40 bg-white/10 rounded-md animate-pulse" />
+          <div className="h-12 w-36 bg-white/5 rounded-md animate-pulse" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CardSkeleton() {
+  return (
+    <div className="flex-none w-[160px] md:w-[200px]">
+      <div className="aspect-[2/3] rounded-md bg-secondary animate-pulse" />
+      <div className="mt-3 space-y-2">
+        <div className="h-4 w-3/4 bg-white/5 rounded animate-pulse" />
+        <div className="flex items-center gap-2">
+          <div className="h-3 w-16 bg-white/5 rounded animate-pulse" />
+          <div className="h-3 w-8 bg-white/5 rounded animate-pulse" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RowSkeleton({ title }) {
+  return (
+    <section>
+      <div className="h-7 w-40 bg-white/5 rounded mb-6 animate-pulse" />
+      <div className="flex gap-4 overflow-hidden -mx-6 px-6 lg:-mx-12 lg:px-12">
+        {Array.from({ length: 7 }).map((_, i) => (
+          <CardSkeleton key={i} />
+        ))}
+      </div>
+    </section>
+  );
+}
 
 export default function Home() {
   const [trending, setTrending] = useState([]);
   const [latest, setLatest] = useState([]);
   const [featured, setFeatured] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const seriesData = await getAllSeries();
 
-        // Map backend data to frontend structure if needed
         const mappedData = seriesData.map(s => ({
           id: s._id,
           title: s.title,
           description: s.description,
           image: s.imageURL,
-          backdrop: s.backdrop || s.imageURL, // Fallback to poster if no backdrop
+          backdrop: s.backdrop || s.imageURL,
           rating: s.rating,
           genre: s.genre ? s.genre.split(',').map(g => g.trim()) : [],
           year: s.releaseDate ? new Date(s.releaseDate).getFullYear() : "N/A",
-
           status: s.status,
           episodes: s.episodes || []
         }));
 
-        // Sort for Popular (by rating)
         const popularData = [...mappedData].sort((a, b) => (b.rating || 0) - (a.rating || 0));
         setTrending(popularData);
 
-        // Sort for Latest (by release date)
         const latestData = [...mappedData].sort((a, b) => new Date(b.releaseDate || 0) - new Date(a.releaseDate || 0));
         setLatest(latestData);
 
         if (mappedData.length > 0) {
-          // Set initial featured from list
-          const initialFeatured = mappedData[0];
-          setFeatured(initialFeatured);
-
-          // Fetch full details for featured to get real episode IDs for Play button
-          // We import getSeriesById dynamically or assume it's available if we add it to imports
-          // But better to just use the one from api lib if available. 
-          // It is not imported yet. I need to add it to imports.
+          setFeatured(mappedData[0]);
         }
       } catch (error) {
         console.error("Failed to fetch series:", error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchData();
   }, []);
 
-  // Effect to fetch featured details
+  // Fetch featured details for episode links
   useEffect(() => {
     if (featured && !featured.realEpisodesFetched) {
-      import("@/lib/api").then(({ getSeriesById }) => {
-        getSeriesById(featured.id).then(data => {
-          if (data && data.episodes && data.episodes.length > 0) {
-            setFeatured(prev => ({
-              ...prev,
-              episodes: data.episodes.map(e => e._id), // Store IDs
-              realEpisodesFetched: true
-            }));
-          }
-        });
+      getSeriesById(featured.id).then(data => {
+        if (data && data.episodes && data.episodes.length > 0) {
+          setFeatured(prev => ({
+            ...prev,
+            episodes: data.episodes.map(e => e._id),
+            realEpisodesFetched: true
+          }));
+        }
       });
     }
   }, [featured]);
@@ -79,7 +125,9 @@ export default function Home() {
       <Navbar />
 
       {/* Hero Section */}
-      {featured && (
+      {loading ? (
+        <HeroSkeleton />
+      ) : featured ? (
         <div className="relative w-full h-[85vh] lg:h-[95vh] overflow-hidden">
           <div className="absolute inset-0">
             <img
@@ -100,7 +148,7 @@ export default function Home() {
               <span className="text-green-400 font-bold">{featured.rating} Match</span>
               <span>{featured.year}</span>
               <span className="border border-white/30 px-2 py-0.5 rounded text-xs">HD</span>
-              <span>{featured.genre.join(" • ")}</span>
+              <span>{featured.genre.join(" \u2022 ")}</span>
             </div>
 
             <p className="text-muted-foreground text-base md:text-lg line-clamp-3 max-w-xl drop-shadow-md">
@@ -123,27 +171,36 @@ export default function Home() {
             </div>
           </div>
         </div>
-      )}
+      ) : null}
 
       {/* Content Rows */}
       <div className="relative z-20 -mt-16 pb-20 space-y-12 px-6 lg:px-12">
-        <section>
-          <h2 className="text-xl md:text-2xl font-display font-semibold text-white mb-6">Popular</h2>
-          <div className="flex gap-4 overflow-x-auto pb-8 scrollbar-hide -mx-6 px-6 lg:-mx-12 lg:px-12">
-            {trending.slice(0, 10).map((anime) => (
-              <AnimeCard key={anime.id} anime={anime} />
-            ))}
-          </div>
-        </section>
+        {loading ? (
+          <>
+            <RowSkeleton />
+            <RowSkeleton />
+          </>
+        ) : (
+          <>
+            <section>
+              <h2 className="text-xl md:text-2xl font-display font-semibold text-white mb-6">Popular</h2>
+              <div className="flex gap-4 overflow-x-auto pb-8 scrollbar-hide -mx-6 px-6 lg:-mx-12 lg:px-12">
+                {trending.slice(0, 10).map((anime) => (
+                  <AnimeCard key={anime.id} anime={anime} />
+                ))}
+              </div>
+            </section>
 
-        <section>
-          <h2 className="text-xl md:text-2xl font-display font-semibold text-white mb-6">Latest Uploads</h2>
-          <div className="flex gap-4 overflow-x-auto pb-8 scrollbar-hide -mx-6 px-6 lg:-mx-12 lg:px-12">
-            {latest.slice(0, 10).map((anime) => (
-              <AnimeCard key={anime.id} anime={anime} />
-            ))}
-          </div>
-        </section>
+            <section>
+              <h2 className="text-xl md:text-2xl font-display font-semibold text-white mb-6">Latest Uploads</h2>
+              <div className="flex gap-4 overflow-x-auto pb-8 scrollbar-hide -mx-6 px-6 lg:-mx-12 lg:px-12">
+                {latest.slice(0, 10).map((anime) => (
+                  <AnimeCard key={anime.id} anime={anime} />
+                ))}
+              </div>
+            </section>
+          </>
+        )}
       </div>
 
       <Footer />

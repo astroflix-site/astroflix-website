@@ -37,7 +37,7 @@ export default function Register() {
       <Card className="w-full max-w-md bg-card/80 backdrop-blur-md border-white/10 relative z-10 shadow-2xl">
         <CardHeader className="text-center pb-2">
           <Link href="/">
-            <h1 className="text-3xl font-display font-bold text-white tracking-tighter mb-2 cursor-pointer">ANIFLEX</h1>
+            <h1 className="text-3xl font-display font-bold text-white tracking-tighter mb-2 cursor-pointer">ASTROFLIX</h1>
           </Link>
           <p className="text-muted-foreground text-sm">Create your account to start watching.</p>
         </CardHeader>

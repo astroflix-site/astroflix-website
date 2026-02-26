@@ -4,7 +4,10 @@ import { Footer } from "@/components/Footer";
 import { AnimeCard } from "@/components/AnimeCard";
 import { useEffect, useState } from "react";
 import { getBookmarks } from "@/lib/api";
-import { User, Settings, CreditCard } from "lucide-react";
+import { useLocation } from "wouter";
+import { User, Settings, Bookmark, Pen, Check, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export default function Dashboard() {
   const { user, isLoading, updateProfile } = useAuth();
@@ -13,6 +16,7 @@ export default function Dashboard() {
   const [newUsername, setNewUsername] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [_, setLocation] = useLocation();
 
   useEffect(() => {
     if (user) {
@@ -44,12 +48,13 @@ export default function Dashboard() {
     }
   };
 
-  if (isLoading) return null;
+  useEffect(() => {
+    if (!isLoading && !user) {
+      setLocation("/login");
+    }
+  }, [isLoading, user, setLocation]);
 
-  if (!user) {
-    window.location.href = "/login";
-    return null;
-  }
+  if (isLoading || !user) return null;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -58,85 +63,80 @@ export default function Dashboard() {
       <div className="container mx-auto px-6 pt-24 pb-12 flex-1">
         <h1 className="text-3xl font-display font-bold text-white mb-8">Account Overview</h1>
 
-        <div className="grid md:grid-cols-3 gap-8 mb-16">
-          <div className="bg-card border border-white/5 p-6 rounded-lg flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full overflow-hidden border border-white/10">
+        {/* Profile Card */}
+        <div className="bg-card border border-white/5 rounded-lg p-6 mb-12">
+          <div className="flex items-center gap-5">
+            <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white/10 shrink-0">
               <img src={user.avatar} alt="Avatar" className="w-full h-full object-cover" />
             </div>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               {isEditing ? (
-                <div className="space-y-2">
-                  <input
+                <div className="space-y-3">
+                  <Input
                     type="text"
                     value={newUsername}
                     onChange={(e) => setNewUsername(e.target.value)}
-                    className="bg-background border border-white/10 rounded px-2 py-1 text-white text-sm w-full"
+                    className="bg-background border-white/10 text-white max-w-xs"
                     placeholder="New username"
                   />
                   <div className="flex gap-2">
-                    <button
+                    <Button
+                      size="sm"
                       onClick={handleUpdateProfile}
-                      className="bg-primary text-primary-foreground px-2 py-1 rounded text-xs hover:bg-primary/90"
+                      className="bg-white text-black hover:bg-white/90"
                     >
+                      <Check className="w-3.5 h-3.5 mr-1.5" />
                       Save
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
                       onClick={() => {
                         setIsEditing(false);
                         setNewUsername(user.username);
                         setError("");
                       }}
-                      className="bg-secondary text-secondary-foreground px-2 py-1 rounded text-xs hover:bg-secondary/80"
+                      className="border-white/20 text-white hover:bg-white/10"
                     >
+                      <X className="w-3.5 h-3.5 mr-1.5" />
                       Cancel
-                    </button>
+                    </Button>
                   </div>
                   {error && <p className="text-red-400 text-xs">{error}</p>}
                 </div>
               ) : (
                 <>
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-white font-bold text-lg">{user.username}</h3>
-                    <button
+                  <div className="flex items-center gap-3">
+                    <h3 className="text-white font-bold text-lg truncate">{user.username}</h3>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="w-7 h-7 text-muted-foreground hover:text-white hover:bg-white/10"
                       onClick={() => setIsEditing(true)}
-                      className="text-muted-foreground hover:text-white"
                       title="Edit Profile"
                     >
-                      <Settings className="w-4 h-4" />
-                    </button>
+                      <Pen className="w-3.5 h-3.5" />
+                    </Button>
                   </div>
                   <p className="text-sm text-muted-foreground">{user.email}</p>
-                  {user.isAdmin && <span className="text-xs bg-red-500/10 text-red-400 px-2 py-0.5 rounded mt-1 inline-block">Admin</span>}
+                  {user.isAdmin && <span className="text-xs bg-red-500/10 text-red-400 px-2 py-0.5 rounded mt-2 inline-block border border-red-500/20">Admin</span>}
                   {success && <p className="text-green-400 text-xs mt-1">{success}</p>}
                 </>
               )}
             </div>
           </div>
-
-          {/* <div className="bg-card border border-white/5 p-6 rounded-lg space-y-4">
-            <h3 className="text-white font-bold flex items-center gap-2">
-              <Settings className="w-4 h-4" /> Settings
-            </h3>
-            <div className="space-y-2">
-              <button className="text-sm text-muted-foreground hover:text-white block">Change Password</button>
-              <button className="text-sm text-muted-foreground hover:text-white block">Notification Preferences</button>
-              <button className="text-sm text-muted-foreground hover:text-white block">Parental Controls</button>
-            </div>
-          </div>
-
-          <div className="bg-card border border-white/5 p-6 rounded-lg space-y-4">
-            <h3 className="text-white font-bold flex items-center gap-2">
-              <CreditCard className="w-4 h-4" /> Subscription
-            </h3>
-            <div className="space-y-2">
-              <p className="text-sm text-white">Premium Plan (4K HDR)</p>
-              <p className="text-xs text-muted-foreground">Next billing date: Jan 12, 2026</p>
-              <button className="text-sm text-blue-400 hover:text-blue-300 block mt-2">Manage Subscription</button>
-            </div>
-          </div> */}
         </div>
 
-        <h2 className="text-2xl font-display font-bold text-white mb-6">My List</h2>
+        {/* Bookmarks Section */}
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-display font-bold text-white">My List</h2>
+          {bookmarks.length > 0 && (
+            <span className="text-xs text-muted-foreground bg-white/5 px-2.5 py-1 rounded-full">
+              {bookmarks.length} {bookmarks.length === 1 ? "title" : "titles"}
+            </span>
+          )}
+        </div>
+
         {bookmarks.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
             {bookmarks.map(anime => (
@@ -144,8 +144,18 @@ export default function Dashboard() {
             ))}
           </div>
         ) : (
-          <div className="text-center py-12 border border-dashed border-white/10 rounded-lg">
-            <p className="text-muted-foreground">Your list is empty. Start adding some anime!</p>
+          <div className="text-center py-16 border border-dashed border-white/10 rounded-lg">
+            <Bookmark className="w-10 h-10 text-white/10 mx-auto mb-3" />
+            <p className="text-white font-medium mb-1">Your watchlist is empty</p>
+            <p className="text-sm text-muted-foreground mb-4">Explore and bookmark anime to build your list</p>
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-white/20 text-white hover:bg-white/10"
+              onClick={() => setLocation("/explore")}
+            >
+              Browse Anime
+            </Button>
           </div>
         )}
       </div>

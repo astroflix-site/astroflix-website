@@ -6,7 +6,7 @@ import { AnimeCard } from "@/components/AnimeCard";
 import { getAllSeries } from "@/lib/api";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search } from "lucide-react";
+import { Search, SlidersHorizontal } from "lucide-react";
 
 export default function Explore() {
     const [series, setSeries] = useState([]);
@@ -128,7 +128,12 @@ export default function Explore() {
                 </div>
 
                 {loading ? (
-                    <div className="text-center py-20 text-muted-foreground">Loading...</div>
+                    <div className="flex items-center justify-center py-20">
+                        <div className="flex flex-col items-center gap-4">
+                            <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                            <p className="text-sm text-muted-foreground">Loading anime...</p>
+                        </div>
+                    </div>
                 ) : (
                     <>
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
@@ -138,8 +143,14 @@ export default function Explore() {
                         </div>
 
                         {filteredSeries.length === 0 && (
-                            <div className="text-center py-20 text-muted-foreground">
-                                No anime found matching your criteria.
+                            <div className="text-center py-20 col-span-full">
+                                <Search className="w-10 h-10 text-white/10 mx-auto mb-3" />
+                                <p className="text-white font-medium mb-1">No anime found</p>
+                                <p className="text-sm text-muted-foreground">
+                                    {searchQuery || selectedGenre !== "All"
+                                        ? "Try adjusting your filters or search terms"
+                                        : "No anime available yet"}
+                                </p>
                             </div>
                         )}
                     </>

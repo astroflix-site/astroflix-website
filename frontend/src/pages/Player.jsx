@@ -38,9 +38,26 @@ export default function Player() {
     }
   }, [params?.episodeId]);
 
-  if (loading) return <div className="min-h-screen bg-black flex items-center justify-center text-white">Loading...</div>;
-  if (error) return <div className="min-h-screen bg-black flex items-center justify-center text-red-500">{error}</div>;
-  if (!episode) return <div className="min-h-screen bg-black flex items-center justify-center text-white">Episode not found</div>;
+  if (loading) return (
+    <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+        <p className="text-sm text-muted-foreground">Loading episode...</p>
+      </div>
+    </div>
+  );
+  if (error) return (
+    <div className="min-h-screen bg-black flex flex-col items-center justify-center gap-4">
+      <p className="text-red-400">{error}</p>
+      <Link href="/"><Button variant="outline" className="border-white/20 text-white hover:bg-white/10">Go Home</Button></Link>
+    </div>
+  );
+  if (!episode) return (
+    <div className="min-h-screen bg-black flex flex-col items-center justify-center gap-4">
+      <p className="text-muted-foreground">Episode not found</p>
+      <Link href="/"><Button variant="outline" className="border-white/20 text-white hover:bg-white/10">Go Home</Button></Link>
+    </div>
+  );
 
   // Get servers array (backward compatible)
   const servers = episode.servers || [{ name: 'Server 1', url: episode.url }];
@@ -151,7 +168,7 @@ export default function Player() {
                 <div className="space-y-2">
                   {upNextEpisodes.map((ep) => (
                     <Link key={ep._id || ep.id} href={`/watch/${ep._id || ep.id}`}>
-                      <div className="group m-2 flex items-center gap-3 p-3 rounded-md bg-white/5 hover:bg-white/10 transition-colors cursor-pointer border border-white/5">
+                      <div className="group flex items-center gap-3 p-3 rounded-md bg-white/5 hover:bg-white/10 transition-colors cursor-pointer border border-white/5">
                         <div className="flex-none w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-xs font-mono text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                           {ep.episodeNumber}
                         </div>

@@ -56,11 +56,22 @@ const User = {
     },
 
     /**
+     * Update user's last login time
+     * @param {number} id - User ID
+     * @returns {boolean} True if updated
+     */
+    async updateLastLogin(id) {
+        const query = 'UPDATE users SET last_login = NOW() WHERE id = $1';
+        const result = await pool.query(query, [id]);
+        return result.rowCount > 0;
+    },
+
+    /**
      * Find all users
      * @returns {Array} Array of all users
      */
     async findAll() {
-        const query = 'SELECT id, username, email, role, created_at FROM users ORDER BY created_at DESC';
+        const query = 'SELECT id, username, email, role, created_at, last_login FROM users ORDER BY created_at DESC';
         const result = await pool.query(query);
         return result.rows;
     },

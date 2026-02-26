@@ -36,7 +36,7 @@ export default function Login() {
       <Card className="w-full max-w-md bg-card/80 backdrop-blur-md border-white/10 relative z-10 shadow-2xl">
         <CardHeader className="text-center pb-2">
           <Link href="/">
-            <h1 className="text-3xl font-display font-bold text-white tracking-tighter mb-2 cursor-pointer">ANIFLEX</h1>
+            <h1 className="text-3xl font-display font-bold text-white tracking-tighter mb-2 cursor-pointer">ASTROFLIX</h1>
           </Link>
           <p className="text-muted-foreground text-sm">Welcome back to the premium anime experience.</p>
         </CardHeader>
@@ -46,7 +46,7 @@ export default function Login() {
               <Label className="text-white">Email</Label>
               <Input
                 type="email"
-                placeholder="demo@aniflex.com"
+                placeholder="you@example.com"
                 className="bg-black/40 border-white/10 text-white placeholder:text-white/20 focus:border-white/30"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -72,7 +72,7 @@ export default function Login() {
         </CardContent>
         <CardFooter className="justify-center">
           <p className="text-sm text-muted-foreground">
-            New to AniFlex? <Link href="/register" className="text-white hover:underline">Sign up now</Link>
+            New here? <Link href="/register" className="text-white hover:underline">Sign up now</Link>
           </p>
         </CardFooter>
       </Card>

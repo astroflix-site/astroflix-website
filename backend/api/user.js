@@ -75,6 +75,9 @@ router.post("/login", async (req, res) => {
         return res.status(400).json({ message: "Invalid Credentials" });
       }
 
+      // Update last login
+      await User.updateLastLogin(existingUser.id);
+
       // generating the jwt token
       const token = jwt.sign({ id: existingUser.id, email: existingUser.email }, process.env.TOKEN_SECRET, { expiresIn: "30d" })
 
@@ -149,7 +152,8 @@ router.get('/users', async (req, res) => {
       username: user.username,
       email: user.email,
       role: user.role,
-      createdAt: user.created_at
+      createdAt: user.created_at,
+      lastLogin: user.last_login
     }));
 
     res.status(200).json({
@@ -227,6 +231,42 @@ router.put('/update-user', IsAuth, async (req, res) => {
 });
 
 //user delete
+
+//admin: get single user details with bookmarks
+router.get('/admin-user-details/:id', IsAuth, IsAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const bookmarks = await User.getBookmarks(id);
+    const formattedBookmarks = bookmarks.map(b => ({
+      _id: b.id,
+      title: b.title,
+      imageURL: b.image_url,
+      genre: b.genre,
+      bookmarkedAt: b.bookmarked_at
+    }));
+
+    return res.status(200).json({
+      user: {
+        _id: user.id,
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        createdAt: user.created_at,
+        lastLogin: user.last_login
+      },
+      bookmarks: formattedBookmarks
+    });
+  } catch (error) {
+    console.error('Error fetching admin user details:', error);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
 
 router.delete('/delete-user/:id', IsAuth, IsAdmin, async (req, res) => {
   try {

@@ -18,7 +18,7 @@ export function Navbar() {
   const { user, logout } = useAuth();
   const [search, setSearch] = useState("");
   const [showMobileSearch, setShowMobileSearch] = useState(false);
-  const [_, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleSearch = (e) => {
@@ -29,14 +29,32 @@ export function Navbar() {
     }
   };
 
+  const isActive = (path) => {
+    if (path === "/") return location === "/";
+    return location.startsWith(path);
+  };
+
   const NavLinks = ({ mobile = false, onClick = () => { } }) => (
     <>
-      <Link href="/" className={`hover:text-white transition-colors ${mobile ? 'text-lg py-2' : ''}`} onClick={onClick}>Home</Link>
-      <Link href="/explore" className={`hover:text-white transition-colors ${mobile ? 'text-lg py-2' : ''}`} onClick={onClick}>Explore</Link>
-      <Link href="/dashboard" className={`hover:text-white transition-colors ${mobile ? 'text-lg py-2' : ''}`} onClick={onClick}>My List</Link>
-      {user?.isAdmin && (
-        <Link href="/admin" className={`hover:text-white transition-colors ${mobile ? 'text-lg py-2' : ''}`} onClick={onClick}>Admin</Link>
-      )}
+      {[
+        { href: "/", label: "Home" },
+        { href: "/explore", label: "Explore" },
+        { href: "/dashboard", label: "My List" },
+        ...(user?.isAdmin ? [{ href: "/admin", label: "Admin" }] : []),
+      ].map(({ href, label }) => (
+        <Link
+          key={href}
+          href={href}
+          className={`transition-colors ${mobile ? 'text-lg py-2' : 'text-sm'} ${
+            isActive(href)
+              ? 'text-white font-semibold'
+              : 'text-muted-foreground hover:text-white'
+          }`}
+          onClick={onClick}
+        >
+          {label}
+        </Link>
+      ))}
     </>
   );
 
@@ -64,7 +82,7 @@ export function Navbar() {
         </Link>
 
         {/* Desktop Nav */}
-        <div className="hidden md:flex gap-6 text-sm font-medium text-muted-foreground">
+        <div className="hidden md:flex gap-6 font-medium">
           <NavLinks />
         </div>
       </div>
@@ -75,7 +93,7 @@ export function Navbar() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
             type="search"
-            placeholder="Titles, people, genres"
+            placeholder="Search anime..."
             className="pl-9 bg-secondary border-none h-9 w-64 text-sm focus-visible:ring-1 focus-visible:ring-white/20"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -104,7 +122,12 @@ export function Navbar() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56 bg-card border-white/10 text-white">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuLabel className="font-normal">
+                <div className="flex flex-col gap-1">
+                  <p className="text-sm font-medium text-white">{user.username}</p>
+                  <p className="text-xs text-muted-foreground">{user.email}</p>
+                </div>
+              </DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-white/10" />
               <DropdownMenuItem className="cursor-pointer focus:bg-white/10" onClick={() => setLocation("/dashboard")}>
                 <User className="mr-2 h-4 w-4" />
@@ -142,7 +165,7 @@ export function Navbar() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Search..."
+              placeholder="Search anime..."
               className="pl-9 bg-secondary border-none w-full"
               value={search}
               onChange={(e) => setSearch(e.target.value)}

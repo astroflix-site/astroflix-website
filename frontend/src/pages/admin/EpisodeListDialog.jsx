@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { deleteEpisode, getSeriesById } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -14,7 +14,7 @@ export default function EpisodeListDialog({ seriesId, open, onOpenChange }) {
     const [editingEpisode, setEditingEpisode] = useState(null);
 
     // Fetch episodes when dialog opens
-    useState(() => {
+    useEffect(() => {
         if (open && seriesId) {
             setLoading(true);
             getSeriesById(seriesId)

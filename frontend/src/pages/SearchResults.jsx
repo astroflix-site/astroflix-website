@@ -3,6 +3,7 @@ import { useRoute } from "wouter";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { AnimeCard } from "@/components/AnimeCard";
+import { Search } from "lucide-react";
 import { searchSeries } from "@/lib/api";
 
 export default function SearchResults() {
@@ -41,7 +42,12 @@ export default function SearchResults() {
                 <p className="text-muted-foreground mb-8">Found {results.length} results for "{query}"</p>
 
                 {loading ? (
-                    <div className="text-white">Loading...</div>
+                    <div className="flex items-center justify-center py-20">
+                        <div className="flex flex-col items-center gap-4">
+                            <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                            <p className="text-sm text-muted-foreground">Searching...</p>
+                        </div>
+                    </div>
                 ) : results.length > 0 ? (
                     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
                         {results.map(anime => (
@@ -49,8 +55,12 @@ export default function SearchResults() {
                         ))}
                     </div>
                 ) : (
-                    <div className="text-center py-12 border border-dashed border-white/10 rounded-lg">
-                        <p className="text-muted-foreground">No results found for "{query}". Try a different search term.</p>
+                    <div className="text-center py-16 border border-dashed border-white/10 rounded-lg">
+                        <Search className="w-10 h-10 text-white/10 mx-auto mb-3" />
+                        <p className="text-white font-medium mb-1">No results found</p>
+                        <p className="text-sm text-muted-foreground">
+                            No results for "{query}". Try a different search term.
+                        </p>
                     </div>
                 )}
             </div>

@@ -10,16 +10,14 @@ export function AuthProvider({ children }) {
   const [_, setLocation] = useLocation();
 
   useEffect(() => {
-    // Check session on mount
+    // Check session on mount - go straight to getUserDetails
+    // which will fail with 401 if no valid cookie exists
     const checkSession = async () => {
       try {
-        const isValid = await api.checkCookie();
-        if (isValid) {
-          const userData = await api.getUserDetails();
-          setUser({ ...userData, isAdmin: userData.role === 'admin' });
-        }
+        const userData = await api.getUserDetails();
+        setUser({ ...userData, isAdmin: userData.role === 'admin' });
       } catch (error) {
-        console.error("Session check failed", error);
+        // No valid session - user stays null
       } finally {
         setIsLoading(false);
       }
@@ -28,7 +26,8 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = async (email, password) => {
-    setIsLoading(true);
+    // Don't set isLoading here - the login form has its own loading state.
+    // Setting isLoading causes pages (AdminPanel, Dashboard) to flash blank.
     try {
       await api.login(email, password);
       const userData = await api.getUserDetails();
@@ -36,29 +35,18 @@ export function AuthProvider({ children }) {
       setLocation("/");
     } catch (error) {
       throw error;
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const register = async (username, email, password) => {
-    setIsLoading(true);
     try {
-      // 1. Register the user
       await api.register(username, email, password);
-
-      // 2. Auto-login the user immediately after registration
       await api.login(email, password);
-
-      // 3. Fetch user details
       const userData = await api.getUserDetails();
-
       setUser({ ...userData, isAdmin: userData.role === 'admin' });
       setLocation("/");
     } catch (error) {
       throw error;
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -73,16 +61,12 @@ export function AuthProvider({ children }) {
   };
 
   const updateProfile = async (data) => {
-    setIsLoading(true);
     try {
       const response = await api.updateUser(data);
-      // Update local user state with new data
       setUser(prev => ({ ...prev, ...response.user }));
       return response;
     } catch (error) {
       throw error;
-    } finally {
-      setIsLoading(false);
     }
   };
 

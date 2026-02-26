@@ -70,6 +70,15 @@ export const deleteUser = async (id) => {
     }
 };
 
+export const getAdminUserDetails = async (id) => {
+    try {
+        const response = await api.get(`/admin-user-details/${id}`);
+        return response.data;
+    } catch (error) {
+        throw error.response?.data?.message || "Failed to fetch user details";
+    }
+};
+
 export const updateUser = async (data) => {
     try {
         const response = await api.put("/update-user", data);

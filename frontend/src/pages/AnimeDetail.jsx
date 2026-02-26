@@ -118,9 +118,26 @@ export default function AnimeDetail() {
     setCurrentPage(1);
   }, [selectedSeason, searchQuery]);
 
-  if (loading) return <div className="min-h-screen bg-black flex items-center justify-center text-white">Loading...</div>;
-  if (error) return <div className="min-h-screen bg-black flex items-center justify-center text-red-500">{error}</div>;
-  if (!anime) return <div className="min-h-screen bg-black flex items-center justify-center text-white">Series not found</div>;
+  if (loading) return (
+    <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+        <p className="text-sm text-muted-foreground">Loading series...</p>
+      </div>
+    </div>
+  );
+  if (error) return (
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
+      <p className="text-red-400">{error}</p>
+      <Link href="/"><Button variant="outline" className="border-white/20 text-white hover:bg-white/10">Go Home</Button></Link>
+    </div>
+  );
+  if (!anime) return (
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
+      <p className="text-muted-foreground">Series not found</p>
+      <Link href="/explore"><Button variant="outline" className="border-white/20 text-white hover:bg-white/10">Browse Anime</Button></Link>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
@@ -175,9 +192,9 @@ export default function AnimeDetail() {
               <div className="md:col-span-1 space-y-4 text-sm">
                 <div>
                   <span className="text-muted-foreground">Genres:</span>
-                  <div className="flex flex-wrap gap-2 mt-1">
+                  <div className="flex flex-wrap gap-2 mt-2">
                     {anime.genre.map(g => (
-                      <span key={g} className="text-white hover:underline cursor-pointer">{g}</span>
+                      <span key={g} className="text-xs text-white bg-white/10 px-2.5 py-1 rounded-full border border-white/5">{g}</span>
                     ))}
                   </div>
                 </div>
